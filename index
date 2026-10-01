@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幽境危战</title>
+    <!-- 引入 ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        /* 基础重置 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif; }
+        body { background-color: #f5f6fa; display: flex; justify-content: center; padding: 20px; color: #333; }
+        
+        /* 主画板 */
+        .canvas { position: relative; width: 1240px; background-color: #ffffff; box-shadow: 0 0 30px rgba(0, 0, 0, 0.1); padding: 30px 40px 50px; border-radius: 8px; overflow: hidden; }
+        
+        /* 顶部标题与期数切换 */
+        .header-section { display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 20px; }
+        .header-section h1 { font-size: 28px; font-weight: 700; letter-spacing: 3px; color: #000; text-align: center; }
+        .period-switcher { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 0 auto 20px; width: fit-content; background: #fff; border: 2px solid #000; border-radius: 30px; padding: 6px 22px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
+        .period-switcher .arrow { font-size: 20px; font-weight: bold; cursor: pointer; user-select: none; color: #000; padding: 0 5px; }
+        .period-switcher .date { font-size: 14px; font-weight: 600; color: #000; text-align: center; line-height: 1.3; min-width: 180px; }
+
+        /* 难度切换器 (N1-3 / N4-6) */
+        .difficulty-switcher { display: flex; justify-content: center; gap: 20px; margin-bottom: 25px; }
+        .diff-btn { background: #fff; border: 2px solid #ccc; border-radius: 25px; padding: 10px 40px; font-size: 16px; font-weight: 700; color: #666; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; min-width: 140px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .diff-btn.active { border-color: #a855f7; background: #faf5ff; color: #7e22ce; box-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
+        .diff-btn:hover { border-color: #a855f7; }
+
+        /* 三个怪物卡片区域 */
+        .monster-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 30px; }
+        .monster-card { display: flex; flex-direction: column; align-items: center; position: relative; padding: 10px; border-radius: 8px; }
+        .monster-card::before { content: ''; position: absolute; top: -20px; width: 220px; height: 220px; background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0) 70%); z-index: 0; border-radius: 50%; pointer-events: none; }
+        
+        /* 怪物图标 */
+        .monster-icon { width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); border: 4px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 25px rgba(168, 85, 247, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.2); display: flex; align-items: center; justify-content: center; font-size: 50px; z-index: 1; margin-bottom: 15px; position: relative; }
+        .monster-icon span { filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+        .monster-name { font-size: 15px; font-weight: 700; color: #1e3a8a; text-align: center; margin-bottom: 2px; z-index: 1; }
+        .monster-sub { font-size: 12px; color: #666; text-align: center; margin-bottom: 10px; font-style: italic; z-index: 1; }
+
+        /* 元素图标行 */
+        .elem-row { display: flex; gap: 8px; margin-bottom: 12px; z-index: 1; }
+        .elem-icon { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-weight: bold; overflow: hidden; }
+        .elem-icon img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* 元素颜色（备用，若图片加载失败则显示颜色） */
+        .elem-ice { background-color: #60a5fa; }
+        .elem-fire { background-color: #ef4444; }
+        .elem-rock { background-color: #d97706; }
+        .elem-water { background-color: #3b82f6; }
+        .elem-wind { background-color: #10b981; }
+        .elem-electric { background-color: #8b5cf6; }
+
+        /* 血量数值行 */
+        .stats-row { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 12px; z-index: 1; width: 100%; }
+        .stats-row .stat-item { display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 13px; font-weight: 600; }
+        .stats-row .stat-label { color: #333; min-width: 28px; text-align: right; }
+        .stats-row .stat-value { color: #cc0000; font-family: 'Courier New', monospace; min-width: 80px; text-align: right; }
+        .stats-row .stat-percent { color: #888; font-size: 11px; min-width: 45px; text-align: left; }
+
+        /* 机制黑框 */
+        .mechanism-box { width: 100%; background-color: #ffffff; border: 3px solid #1a1a1a; border-radius: 6px; padding: 12px 14px; font-size: 12px; line-height: 1.6; color: #1a1a1a; text-align: left; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 0 0 1px #fff; z-index: 1; min-height: 240px; flex-grow: 1; }
+        .mechanism-box .mech-title { font-weight: 800; font-size: 13px; margin-bottom: 6px; color: #000; }
+        .mechanism-box .mech-line { margin-bottom: 4px; text-align: justify; }
+
+        /* 底部图表区域 */
+        .chart-section { border-top: 2px solid #eee; padding-top: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .chart-wrapper { width: 100%; height: 260px; position: relative; }
+
+        /* 响应式 */
+        @media (max-width: 1250px) {
+            .canvas { width: 100%; padding: 20px; }
+            .monster-row { gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="canvas">
+    <!-- 1. 顶部标题 -->
+    <div class="header-section">
+        <h1>幽境危战</h1>
+    </div>
+
+    <!-- 2. 期数切换 -->
+    <div class="period-switcher">
+        <span class="arrow" id="prevSchedule">◀</span>
+        <span class="date" id="scheduleDate">加载中...</span>
+        <span class="arrow" id="nextSchedule">▶</span>
+    </div>
+
+    <!-- 3. 难度切换器 (N1-3 / N4-6) -->
+    <div class="difficulty-switcher" id="difficultySwitcher">
+        <div class="diff-btn" data-mode="1">N1-3</div>
+        <div class="diff-btn active" data-mode="4">N4-6</div>
+    </div>
+
+    <!-- 4. 三个怪物卡片区域 -->
+    <div class="monster-row" id="monsterRow">
+        <!-- JS 动态生成 -->
+    </div>
+
+    <!-- 5. 底部图表区域 -->
+    <div class="chart-section">
+        <div class="chart-wrapper" id="totalChart"></div>
+        <div class="chart-wrapper" id="bossChart"></div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // 1. 配置与常量
+    // ============================================================
+    const DATA_ROOT = 'data'; // JSON 数据目录
+    const IMAGE_ROOT = 'images'; // 图片根目录
+
+    // 难度倍率与百分比（固定配置，无需外部加载）
+    const diffMultipliers = { 1: 0.15, 2: 0.30, 3: 0.55, 4: 1.00, 5: 1.79, 6: 3.92 };
+    const diffPercents = { 1: "15%", 2: "30%", 3: "55%", 4: "400%", 5: "620%", 6: "1240%" };
+
+    // 全局状态
+    let indexData = [];        // 期数文件列表
+    let currentIndex = 0;      // 当前期数索引
+    let currentDiffMode = 4;   // 当前难度模式：1=N1-3, 4=N4-6
+    let currentEntryData = null; // 当前期数的完整数据
+    let chartInstance1 = null;
+    let chartInstance2 = null;
+
+    // 辅助函数
+    const byId = (id) => document.getElementById(id);
+
+    // ============================================================
+    // 2. 数据加载
+    // ============================================================
+    async function loadIndex() {
+        const res = await fetch(`${DATA_ROOT}/index.json`);
+        if (!res.ok) throw new Error('无法加载 index.json');
+        const data = await res.json();
+        return data.entries || [];
+    }
+
+    async function loadEntry(fileName) {
+        const res = await fetch(`${DATA_ROOT}/${fileName}`);
+        if (!res.ok) throw new Error(`无法加载 ${fileName}`);
+        return res.json();
+    }
+
+    // ============================================================
+    // 3. 渲染函数
+    // ============================================================
+
+    // 3.1 更新顶部时间
+    const updateHeader = () => {
+        if (!currentEntryData) return;
+        const entry = currentEntryData;
+        byId("scheduleDate").innerHTML = `${entry.deadly_name || ''}<br>${entry.time || ""}`;
+    };
+
+    // 3.2 渲染难度切换器
+    const renderDifficultySwitcher = () => {
+        const container = byId("difficultySwitcher");
+        container.innerHTML = '';
+        const modes = [
+            { label: "N1-3", mode: 1 },
+            { label: "N4-6", mode: 4 }
+        ];
+        modes.forEach(m => {
+            const btn = document.createElement("div");
+            btn.className = `diff-btn ${currentDiffMode === m.mode ? 'active' : ''}`;
+            btn.textContent = m.label;
+            btn.addEventListener("click", () => {
+                currentDiffMode = m.mode;
+                render();
+            });
+            container.appendChild(btn);
+        });
+    };
+
+    // 3.3 渲染元素图标（使用图片）
+    const renderElemIcon = (elem) => {
+        // 尝试加载图片，如果加载失败则回退到颜色圆点
+        const imgPath = `${IMAGE_ROOT}/element/${elem}.png`;
+        return `
+            <div class="elem-icon elem-${elem}">
+                <img src="${imgPath}" alt="${elem}" onerror="this.style.display='none'; this.parentElement.classList.add('fallback-${elem}')">
+            </div>
+        `;
+    };
+
+    // 3.4 渲染怪物卡片
+    const renderMonsterCards = () => {
+        const container = byId("monsterRow");
+        container.innerHTML = '';
+
+        if (!currentEntryData || !currentEntryData.bosses || currentEntryData.bosses.length === 0) {
+            container.innerHTML = `<div style="grid-column: span 3; text-align: center; color: #999; padding: 50px;">暂无数据</div>`;
+            return;
+        }
+
+        currentEntryData.bosses.forEach((boss) => {
+            // 元素
+            const weakness = boss.weakness || [];
+            const resistance = boss.resistance || [];
+            const allElems = [...weakness, ...resistance];
+            const elemHtml = allElems.map(e => renderElemIcon(e)).join('');
+
+            // 机制文本
+            const mechHtml = (boss.mech || "无机制说明")
+                .split('\n')
+                .map(line => line.trim())
+                .filter(Boolean)
+                .map(line => `<div class="mech-line">${line}</div>`)
+                .join('');
+
+            // 根据 currentDiffMode 决定显示哪三个难度
+            const displayLevels = currentDiffMode >= 4 ? [4, 5, 6] : [1, 2, 3];
+            const statsHtml = displayLevels.map(level => {
+                const hp = (boss.hp || 0) * diffMultipliers[level];
+                return `
+                    <div class="stat-item">
+                        <span class="stat-label">N${level}</span>
+                        <span class="stat-value">${Math.round(hp).toLocaleString()}</span>
+                        <span class="stat-percent">${diffPercents[level] || ''}</span>
+                    </div>
+                `;
+            }).join('');
+
+            // 怪物图标（用图片代替 emoji）
+            const monsterImg = `${IMAGE_ROOT}/monsters/${boss.name}.png`;
+            const iconHtml = `<img src="${monsterImg}" alt="${boss.name}" style="width:80%;height:80%;object-fit:contain;" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>${boss.icon || '❓'}</span>'">`;
+
+            const card = document.createElement('div');
+            card.className = 'monster-card';
+            card.innerHTML = `
+                <div class="monster-icon">${iconHtml}</div>
+                <div class="monster-name">${boss.name}</div>
+                <div class="monster-sub">${boss.sub || ''}</div>
+                <div class="elem-row">${elemHtml}</div>
+                <div class="stats-row">
+                    ${statsHtml}
+                </div>
+                <div class="mechanism-box">
+                    <div class="mech-title">妮可萝莉的研究</div>
+                    ${mechHtml || '<div class="mech-line">无机制说明</div>'}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    };
+
+    // 3.5 渲染图表（固定 N6 倍率）
+    const renderCharts = () => {
+        if (!indexData.length) return;
+
+        // 这里图表需要所有期数的数据，暂时仅用当前期模拟
+        // 实际项目中应加载所有期数数据，这里为简化演示只用当前期数据画一条线
+        // 如果您有完整数据，可以维护一个 allEntriesData 数组
+        
+        // 此处演示：使用当前期数据画一条线（实际应包含所有历史期数）
+        const currentLabel = currentEntryData.deadly_name || "当前";
+        const currentTotalHp = currentEntryData.bosses.reduce((sum, b) => sum + (b.hp || 0), 0) * diffMultipliers[6] * 8.74;
+        const currentBossHp = currentEntryData.bosses.map(b => Math.round((b.hp || 0) * diffMultipliers[6] * 8.74));
+
+        // 如果您希望展示历史曲线，请在下方初始化时加载所有数据并传入
+        
+        // 图表1: 强敌总血量演化
+        if (!chartInstance1) chartInstance1 = echarts.init(byId("totalChart"));
+        chartInstance1.setOption({
+            title: { text: `强敌总血量演化 (N6)`, left: "center", top: "5%", textStyle: { fontSize: 14, color: "#333" } },
+            tooltip: { trigger: "axis" },
+            grid: { left: "5%", right: "5%", top: "25%", bottom: "15%", containLabel: true },
+            xAxis: { type: "category", data: [currentLabel], axisLabel: { fontSize: 10, rotate: 45 } },
+            yAxis: { type: "value", axisLabel: { fontSize: 10 } },
+            series: [{
+                name: "总血量", type: "line", data: [Math.round(currentTotalHp)],
+                smooth: false,
+                lineStyle: { color: "#a855f7", width: 2 }, itemStyle: { color: "#a855f7" }
+            }]
+        });
+
+        // 图表2: 各强敌血量演化
+        if (!chartInstance2) chartInstance2 = echarts.init(byId("bossChart"));
+        chartInstance2.setOption({
+            title: { text: `各强敌血量演化 (N6)`, left: "center", top: "5%", textStyle: { fontSize: 14, color: "#333" } },
+            tooltip: { trigger: "axis" },
+            grid: { left: "5%", right: "5%", top: "25%", bottom: "15%", containLabel: true },
+            xAxis: { type: "category", data: [currentLabel], axisLabel: { fontSize: 10, rotate: 45 } },
+            yAxis: { type: "value", axisLabel: { fontSize: 10 } },
+            series: [
+                { name: "强敌 1", type: "line", data: [currentBossHp[0] || 0], smooth: false, lineStyle: { color: "#3b82f6" }, itemStyle: { color: "#3b82f6" } },
+                { name: "强敌 2", type: "line", data: [currentBossHp[1] || 0], smooth: false, lineStyle: { color: "#f59e0b" }, itemStyle: { color: "#f59e0b" } },
+                { name: "强敌 3", type: "line", data: [currentBossHp[2] || 0], smooth: false, lineStyle: { color: "#10b981" }, itemStyle: { color: "#10b981" } }
+            ],
+            legend: { top: "15%", textStyle: { fontSize: 10 } }
+        });
+    };
+
+    // ============================================================
+    // 4. 主渲染与事件绑定
+    // ============================================================
+    const render = () => {
+        updateHeader();
+        renderDifficultySwitcher();
+        renderMonsterCards();
+        renderCharts();
+    };
+
+    const bindEvents = () => {
+        byId("prevSchedule").addEventListener("click", async () => {
+            currentIndex = (currentIndex + 1) % indexData.length;
+            await loadCurrentEntry();
+            render();
+        });
+        byId("nextSchedule").addEventListener("click", async () => {
+            currentIndex = (currentIndex - 1 + indexData.length) % indexData.length;
+            await loadCurrentEntry();
+            render();
+        });
+
+        window.addEventListener('resize', () => {
+            if (chartInstance1) chartInstance1.resize();
+            if (chartInstance2) chartInstance2.resize();
+        });
+    };
+
+    // ============================================================
+    // 5. 初始化
+    // ============================================================
+    async function loadCurrentEntry() {
+        if (!indexData.length) return;
+        const fileName = indexData[currentIndex];
+        currentEntryData = await loadEntry(fileName);
+    }
+
+    async function init() {
+        try {
+            // 1. 加载期数列表
+            indexData = await loadIndex();
+            if (!indexData.length) throw new Error('index.json 为空');
+
+            // 2. 加载当前期数数据
+            await loadCurrentEntry();
+
+            // 3. 绑定事件
+            bindEvents();
+
+            // 4. 首次渲染
+            render();
+        } catch (err) {
+            console.error('初始化失败:', err);
+            byId("monsterRow").innerHTML = `<div style="grid-column: span 3; text-align: center; color: red; padding: 50px;">数据加载失败，请检查 JSON 文件及图片路径。<br>${err.message}</div>`;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+</script>
+
+</body>
+</html>
