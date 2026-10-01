@@ -23,24 +23,19 @@
         .monster-card::before { content: ''; position: absolute; top: -20px; width: 220px; height: 220px; background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0) 70%); z-index: 0; border-radius: 50%; pointer-events: none; }
         .monster-icon { width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); border: 4px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 25px rgba(168, 85, 247, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.2); display: flex; align-items: center; justify-content: center; font-size: 50px; z-index: 1; margin-bottom: 15px; position: relative; overflow: hidden; }
         .monster-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .monster-icon span { filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+        .monster-icon .fallback { font-size: 50px; font-weight: 700; color: #fff; text-shadow: 0 4px 6px rgba(0,0,0,0.3); }
         .monster-name { font-size: 15px; font-weight: 700; color: #1e3a8a; text-align: center; margin-bottom: 2px; z-index: 1; }
         .monster-sub { font-size: 12px; color: #666; text-align: center; margin-bottom: 10px; font-style: italic; z-index: 1; }
-        .elem-row { display: flex; gap: 8px; margin-bottom: 12px; z-index: 1; }
-        .elem-icon { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-weight: bold; overflow: hidden; }
-        .elem-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .elem-ice { background-color: #60a5fa; }
-        .elem-fire { background-color: #ef4444; }
-        .elem-rock { background-color: #d97706; }
-        .elem-water { background-color: #3b82f6; }
-        .elem-wind { background-color: #10b981; }
-        .elem-electric { background-color: #8b5cf6; }
-        .elem-grass { background-color: #22c55e; }
+        .traits-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; z-index: 1; width: 100%; align-items: center; }
+        .trait { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #333; }
+        .trait img { width: 18px; height: 18px; }
+        .trait .elem-mini { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .trait .elem-mini img { width: 100%; height: 100%; object-fit: cover; }
         .stats-row { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 12px; z-index: 1; width: 100%; }
         .stats-row .stat-item { display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 13px; font-weight: 600; }
         .stats-row .stat-label { color: #333; min-width: 28px; text-align: right; }
         .stats-row .stat-value { color: #cc0000; font-family: 'Courier New', monospace; min-width: 80px; text-align: right; }
-        .stats-row .stat-percent { color: #888; font-size: 11px; min-width: 45px; text-align: left; }
+        .stats-row .stat-percent { color: #888; font-size: 11px; min-width: 60px; text-align: left; }
         .mechanism-box { width: 100%; background-color: #ffffff; border: 3px solid #1a1a1a; border-radius: 6px; padding: 12px 14px; font-size: 12px; line-height: 1.6; color: #1a1a1a; text-align: left; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 0 0 1px #fff; z-index: 1; min-height: 240px; flex-grow: 1; }
         .mechanism-box .mech-title { font-weight: 800; font-size: 13px; margin-bottom: 6px; color: #000; }
         .mechanism-box .mech-line { margin-bottom: 4px; text-align: justify; }
@@ -77,26 +72,10 @@
     const MONSTER_ROOT = 'data/monsters';
     const IMAGE_ROOT = 'images';
 
-    const diffMultipliers = { 1: 0.15, 2: 0.30, 3: 0.55, 4: 1.00, 5: 1.79, 6: 3.92 };
-    const diffPercents = { 1: "15%", 2: "30%", 3: "55%", 4: "400%", 5: "620%", 6: "1240%" };
-
-    // 元素名称映射：将 JSON 中的英文 key 映射到 elements 文件夹中的中文文件名
-    // 如果 JSON 里写的是中文，则直接使用。
-    const elemNameMap = {
-        ice: "冰", fire: "火", water: "水", wind: "风",
-        electric: "雷", rock: "岩", grass: "草",
-        // 反应类
-        melt: "融化", vaporize: "蒸发", overload: "超载",
-        superconduct: "超导", electrocharged: "感电",
-        frozen: "冻结", swirl: "扩散", crystalize: "结晶",
-        burning: "燃烧", bloom: "绽放", hyperbloom: "超绽放",
-        burgeon: "烈绽放", aggravate: "激化", spread: "蔓激化",
-        quicken: "原激化", catalyze: "催化"
-    };
-
+    let baseHpTable = null;
     let allEntries = [];
     let currentIndex = 0;
-    let currentDiffMode = 4;
+    let currentDiffMode = 4; // 1=N1-3, 4=N4-6
     let currentMonstersData = [];
     let chartInstance1 = null;
     let chartInstance2 = null;
@@ -107,6 +86,12 @@
     // ============================================================
     // 2. 数据加载
     // ============================================================
+    async function loadBaseHpTable() {
+        const res = await fetch(`${DATA_ROOT}/base_hp.json`);
+        if (!res.ok) throw new Error('无法加载 base_hp.json');
+        baseHpTable = await res.json();
+    }
+
     async function loadIndex() {
         const res = await fetch(`${DATA_ROOT}/index.json`);
         if (!res.ok) throw new Error('无法加载 index.json');
@@ -133,7 +118,26 @@
     }
 
     // ============================================================
-    // 3. 渲染函数
+    // 3. 血量计算
+    // ============================================================
+    function getBaseHp(level, type = 'v1') {
+        if (!baseHpTable) return 0;
+        const table = baseHpTable[type] || baseHpTable.v1;
+        return table[String(level)] || 0;
+    }
+
+    function calcMonsterHp(boss, diffIndex) {
+        const levels = boss.levels || [95, 95, 95, 95, 95, 95];
+        const multipliers = boss.multipliers || [0.15, 0.30, 0.55, 1.00, 1.79, 3.92];
+        const level = levels[diffIndex] || 95;
+        const mult = multipliers[diffIndex] || 1.0;
+        const baseHp = getBaseHp(level, 'v1');
+        const relHp = boss.rel_hp || 1.0;
+        return Math.round(baseHp * relHp * mult);
+    }
+
+    // ============================================================
+    // 4. 渲染
     // ============================================================
     const updateHeader = () => {
         const entry = allEntries[currentIndex];
@@ -154,21 +158,43 @@
     };
 
     /**
-     * 渲染元素图标（含自动回退机制）
-     * 图片按顺序尝试：.avif → .webp → .png → 颜色圆点
-     * 因为您文件夹中“燃烧”是 webp，其余是 avif，所以顺序要按 avif 优先
+     * 元素图标：中文名 + .avif 优先，失败回退 .webp
      */
-    const renderElemIcon = (elemKey) => {
-        // 将英文 key 映射为中文文件名
-        const fileName = elemNameMap[elemKey] || elemKey;
-        const basePath = `${IMAGE_ROOT}/elements/${fileName}`;
-        // 备用背景颜色类
-        const colorClass = `elem-${elemKey}`;
-        // 生成回退链：先 avif -> 再 webp -> 再 png -> 最后隐藏
-        const fallback = `this.onerror=null; this.src='${basePath}.webp'; this.onerror=function(){ this.src='${basePath}.png'; this.onerror=function(){ this.style.display='none'; this.parentElement.classList.add('${colorClass}'); }; };`;
-        return `<div class="elem-icon" title="${fileName}">
-                    <img src="${basePath}.avif" alt="${fileName}" onerror="${fallback}">
+    const renderElemMini = (elemCN) => {
+        const basePath = `${IMAGE_ROOT}/elements/${elemCN}`;
+        const fallback = `this.onerror=null; this.src='${basePath}.webp'; this.onerror=function(){ this.style.display='none'; };`;
+        return `<span class="elem-mini"><img src="${basePath}.avif" alt="${elemCN}" onerror="${fallback}"></span>`;
+    };
+
+    /**
+     * 渲染单个优势/劣势项。
+     * 支持两种格式：
+     *   "*元素*|文字"  → 显示元素图标 + 文字
+     *   "文字"         → 只显示文字
+     */
+    const renderTraitItem = (item, iconFile) => {
+        // 提取 *元素*
+        const elemMatch = item.match(/^\*([^*]+)\*/);
+        let elem = null;
+        let text = item;
+        if (elemMatch) {
+            elem = elemMatch[1].trim();
+            text = item.slice(elemMatch[0].length).replace(/^\|/, '').trim();
+        }
+        const elemHtml = elem ? renderElemMini(elem) : '';
+        return `<div class="trait">
+                    <img src="${IMAGE_ROOT}/elements/${iconFile}.png" alt="">
+                    ${elemHtml}
+                    <span>${text}</span>
                 </div>`;
+    };
+
+    const renderTraits = (boss) => {
+        const items = [];
+        (boss.strengths || []).forEach(s => items.push(renderTraitItem(s, 'check')));
+        (boss.weaknesses || []).forEach(w => items.push(renderTraitItem(w, 'close')));
+        if (!items.length) return '';
+        return `<div class="traits-row">${items.join('')}</div>`;
     };
 
     const renderMonsterCards = () => {
@@ -181,9 +207,6 @@
         }
 
         currentMonstersData.forEach((boss) => {
-            const allElems = [...(boss.weakness || []), ...(boss.resistance || [])];
-            const elemHtml = allElems.map(e => renderElemIcon(e)).join('');
-
             const mechHtml = (boss.mech || "无机制说明")
                 .split('\n')
                 .map(line => line.trim())
@@ -191,19 +214,21 @@
                 .map(line => `<div class="mech-line">${line}</div>`)
                 .join('');
 
-            const displayLevels = currentDiffMode >= 4 ? [4, 5, 6] : [1, 2, 3];
-            const statsHtml = displayLevels.map(level => {
-                const hp = (boss.hp || 0) * diffMultipliers[level];
+            const displayIndexes = currentDiffMode >= 4 ? [3, 4, 5] : [0, 1, 2];
+            const statsHtml = displayIndexes.map(idx => {
+                const hp = calcMonsterHp(boss, idx);
+                const mult = (boss.multipliers || [0.15,0.30,0.55,1.00,1.79,3.92])[idx] || 1;
+                const level = (boss.levels || [95,95,95,95,95,95])[idx] || 95;
                 return `<div class="stat-item">
-                            <span class="stat-label">N${level}</span>
-                            <span class="stat-value">${Math.round(hp).toLocaleString()}</span>
-                            <span class="stat-percent">${diffPercents[level] || ''}</span>
+                            <span class="stat-label">N${idx+1}</span>
+                            <span class="stat-value">${hp.toLocaleString()}</span>
+                            <span class="stat-percent">Lv${level} · ${(mult*100).toFixed(0)}%</span>
                         </div>`;
             }).join('');
 
-            // 怪物图片：均为 png
             const monsterImg = `${IMAGE_ROOT}/monsters/${boss.name}.png`;
-            const iconHtml = `<img src="${monsterImg}" alt="${boss.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>${boss.icon || '❓'}</span>'">`;
+            const fallbackChar = (boss.name || '?').charAt(0);
+            const iconHtml = `<img src="${monsterImg}" alt="${boss.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'fallback\\'>${fallbackChar}</span>'">`;
 
             const card = document.createElement('div');
             card.className = 'monster-card';
@@ -211,7 +236,7 @@
                 <div class="monster-icon">${iconHtml}</div>
                 <div class="monster-name">${boss.name}</div>
                 <div class="monster-sub">${boss.sub || ''}</div>
-                <div class="elem-row">${elemHtml}</div>
+                ${renderTraits(boss)}
                 <div class="stats-row">${statsHtml}</div>
                 <div class="mechanism-box">
                     <div class="mech-title">妮可萝莉的研究</div>
@@ -225,7 +250,6 @@
     const renderCharts = async () => {
         if (!allEntries.length) return;
 
-        // 加载所有期数涉及的全部怪物（用于图表）
         const allMonsterNames = new Set();
         allEntries.forEach(e => (e.bosses || []).forEach(n => allMonsterNames.add(n)));
         const allMonstersList = await Promise.all([...allMonsterNames].map(n => loadMonster(n)));
@@ -235,7 +259,6 @@
         const sortedEntries = allEntries.slice().reverse();
         const labels = sortedEntries.map(e => e.deadly_name || "未知");
 
-        const mult = diffMultipliers[6]; // 固定 N6 倍率
         const totalData = [];
         const bossData = [[], [], []];
 
@@ -244,15 +267,14 @@
             const bossHps = [0, 0, 0];
             (entry.bosses || []).forEach((name, idx) => {
                 const m = monsterMap[name];
-                if (m && m.hp) {
-                    total += m.hp;
-                    if (idx < 3) bossHps[idx] = m.hp;
+                if (m) {
+                    const hpN6 = calcMonsterHp(m, 5);
+                    total += hpN6;
+                    if (idx < 3) bossHps[idx] = hpN6;
                 }
             });
-            totalData.push(Math.round(total * mult * 8.74));
-            for (let i = 0; i < 3; i++) {
-                bossData[i].push(Math.round(bossHps[i] * mult * 8.74));
-            }
+            totalData.push(total);
+            for (let i = 0; i < 3; i++) bossData[i].push(bossHps[i]);
         });
 
         if (!chartInstance1) chartInstance1 = echarts.init(byId("totalChart"));
@@ -289,7 +311,7 @@
     };
 
     // ============================================================
-    // 4. 事件绑定
+    // 5. 事件
     // ============================================================
     const bindEvents = () => {
         byId("prevSchedule").addEventListener("click", async () => {
@@ -309,10 +331,11 @@
     };
 
     // ============================================================
-    // 5. 初始化
+    // 6. 初始化
     // ============================================================
     async function init() {
         try {
+            await loadBaseHpTable();
             allEntries = await loadIndex();
             if (!allEntries.length) throw new Error('index.json 为空');
             currentIndex = 0;
