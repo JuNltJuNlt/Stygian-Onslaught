@@ -226,7 +226,8 @@
         <span class="arrow" id="nextSchedule">▶</span>
     </div>
 
-    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
+    <!-- 两个按钮包在一个容器里，下载时整体隐藏 -->
+    <div id="btnBar" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
         <button class="download-btn" id="downloadBtn">下载图片</button>
         <button class="download-btn" id="toggleFormatBtn">切换图片格式-png</button>
     </div>
@@ -293,7 +294,7 @@
     }
 
     async function loadMonster(name) {
-        if (monsterCache[name] !== undefined) return monsterCache[name];
+        if (monsterCache[name]) return monsterCache[name];
         try {
             const res = await fetch(`${MONSTER_ROOT}/${name}.json`);
             if (!res.ok) throw new Error(`无法加载怪物 ${name}.json`);
@@ -315,6 +316,14 @@
         }
         const list = await Promise.all(entry.bosses.map(name => loadMonster(name)));
         currentMonstersData = list.filter(m => m !== null);
+
+        // 预加载当前期图片
+        const folder = currentImageFormat === 'webp' ? 'monsters' : 'monsters-png';
+        const ext    = currentImageFormat === 'webp' ? 'webp'     : 'png';
+        currentMonstersData.forEach(m => {
+            const img = new Image();
+            img.src = `${IMAGE_ROOT}/${folder}/${m.name}.${ext}`;
+        });
     }
 
     // ============================================================
@@ -571,18 +580,19 @@
     // 6. 事件
     // ============================================================
     const bindEvents = () => {
-        // 下载图片（同时隐藏两个按钮）
+        // 下载图片：隐藏整行按钮，等待一帧后截图
         byId("downloadBtn").addEventListener("click", async (e) => {
             e.preventDefault();
-            const downloadBtn = byId("downloadBtn");
-            const toggleBtn = byId("toggleFormatBtn");
+            const btnBar = byId("btnBar");
             const canvasEl = document.querySelector(".canvas");
             const origStyle = canvasEl.getAttribute("style") || "";
 
-            // 用 visibility: hidden 保持占位，避免布局跳动
-            downloadBtn.style.visibility = "hidden";
-            toggleBtn.style.visibility = "hidden";
+            // 用 display: none 完全隐藏按钮行，下方内容按原本的 20px 间距上移
+            btnBar.style.display = "none";
             canvasEl.style.boxShadow = "none";
+
+            // 等待一帧让浏览器完成布局重排，再截图
+            await new Promise(r => requestAnimationFrame(r));
 
             try {
                 const canvas = await html2canvas(canvasEl, {
@@ -605,8 +615,8 @@
                 console.error("截图失败:", err);
                 alert("截图失败，请查看控制台。");
             } finally {
-                downloadBtn.style.visibility = "";
-                toggleBtn.style.visibility = "";
+                // 恢复按钮行
+                btnBar.style.display = "";
                 canvasEl.setAttribute("style", origStyle);
             }
         });
