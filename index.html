@@ -118,8 +118,23 @@
         .diff-btn.active { border-color: #a855f7; background: #faf5ff; color: #7e22ce; box-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
         .diff-btn:hover { border-color: #a855f7; }
 
-        .monster-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 30px; }
-        .monster-card { display: flex; flex-direction: column; align-items: center; position: relative; padding: 10px; border-radius: 8px; }
+        /* 三列等高对齐 */
+        .monster-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 30px;
+            align-items: stretch;
+        }
+        .monster-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            padding: 10px;
+            border-radius: 8px;
+            height: 100%;
+        }
 
         .monster-icon {
             width: 240px; height: 240px;
@@ -136,7 +151,6 @@
             text-shadow: 0 4px 6px rgba(0,0,0,0.15);
         }
 
-        /* 怪物名字：调小到 17px */
         .monster-name {
             font-size: 17px;
             font-weight: 700;
@@ -147,17 +161,40 @@
         }
 
         .monster-sub { font-size: 12px; color: #666; text-align: center; margin-bottom: 10px; z-index: 1; }
-        .traits-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; z-index: 1; width: 100%; align-items: center; }
+
+        /* 优势/劣势行：固定最小高度，保证对齐 */
+        .traits-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 12px;
+            z-index: 1;
+            width: 100%;
+            align-items: center;
+            min-height: 44px;
+        }
         .trait { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #333; flex-wrap: wrap; justify-content: center; }
         .trait > img { width: 18px; height: 18px; }
         .trait .trait-text { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: center; }
         .trait .elem-mini { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
         .trait .elem-mini img { width: 100%; height: 100%; object-fit: cover; }
-        .stats-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 14px; z-index: 1; width: 100%; }
+
+        /* 血量行：固定最小高度，保证对齐 */
+        .stats-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 14px;
+            z-index: 1;
+            width: 100%;
+            min-height: 78px;
+        }
         .stats-row .stat-item { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 600; }
         .stats-row .stat-label { color: #333; min-width: 32px; text-align: right; }
         .stats-row .stat-value { color: #cc0000; font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; min-width: 108px; text-align: right; }
         .stats-row .stat-percent { color: #888; font-size: 12px; min-width: 72px; text-align: left; }
+
         .mechanism-box { width: 100%; background-color: #ffffff; border: 3px solid #1a1a1a; border-radius: 6px; padding: 12px 14px; font-size: 12px; line-height: 1.6; color: #1a1a1a; text-align: left; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 0 0 1px #fff; z-index: 1; min-height: 240px; flex-grow: 1; }
         .mechanism-box .mech-title { font-weight: 800; font-size: 13px; margin-bottom: 6px; color: #000; }
         .mechanism-box .mech-line { margin-bottom: 4px; text-align: justify; }
@@ -168,7 +205,8 @@
         }
 
         .chart-section { border-top: 2px solid #eee; padding-top: 20px; display: flex; flex-direction: column; gap: 20px; }
-        .chart-wrapper { width: 100%; height: 260px; position: relative; }
+        /* 图表高度从 260 提到 420 */
+        .chart-wrapper { width: 100%; height: 420px; position: relative; }
         @media (max-width: 1250px) { .canvas { width: 100%; padding: 20px; } .monster-row { gap: 15px; } }
     </style>
 </head>
@@ -447,7 +485,7 @@
         chartInstance1.setOption({
             title: { text: `强敌总血量演化 (N6)`, left: "center", top: "5%", textStyle: { fontSize: 14, color: "#333" } },
             tooltip: { trigger: "axis" },
-            grid: { left: "5%", right: "5%", top: "25%", bottom: "15%", containLabel: true },
+            grid: { left: "5%", right: "5%", top: "18%", bottom: "12%", containLabel: true },
             xAxis: { type: "category", data: labels, axisLabel: { fontSize: 10, rotate: 45 } },
             yAxis: { type: "value", axisLabel: { fontSize: 10 } },
             series: [{ name: "总血量", type: "line", data: totalData, smooth: false, lineStyle: { color: "#a855f7", width: 2 }, itemStyle: { color: "#a855f7" } }]
@@ -457,7 +495,7 @@
         chartInstance2.setOption({
             title: { text: `各强敌血量演化 (N6)`, left: "center", top: "5%", textStyle: { fontSize: 14, color: "#333" } },
             tooltip: { trigger: "axis" },
-            grid: { left: "5%", right: "5%", top: "25%", bottom: "15%", containLabel: true },
+            grid: { left: "5%", right: "5%", top: "18%", bottom: "12%", containLabel: true },
             xAxis: { type: "category", data: labels, axisLabel: { fontSize: 10, rotate: 45 } },
             yAxis: { type: "value", axisLabel: { fontSize: 10 } },
             series: [
