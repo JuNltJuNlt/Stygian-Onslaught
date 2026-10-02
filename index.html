@@ -25,6 +25,12 @@
         .download-btn:hover { background: rgba(168, 85, 247, 0.25); border-color: #a855f7; }
         .download-btn:active { transform: scale(0.97); }
 
+        /* 下载时给按钮行加 hidden：隐藏 + 去掉底部边距 */
+        #btnBar.hidden {
+            visibility: hidden;
+            margin-bottom: 0;
+        }
+
         .header-section { display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 20px; }
         .header-section h1 { font-size: 28px; font-weight: 700; letter-spacing: 3px; color: #000; text-align: center; }
 
@@ -226,7 +232,6 @@
         <span class="arrow" id="nextSchedule">▶</span>
     </div>
 
-    <!-- 两个按钮包在一个容器里，下载时整体隐藏 -->
     <div id="btnBar" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
         <button class="download-btn" id="downloadBtn">下载图片</button>
         <button class="download-btn" id="toggleFormatBtn">切换图片格式-png</button>
@@ -243,7 +248,6 @@
     </div>
 </div>
 
-<!-- 期数选择弹层 -->
 <div class="period-overlay" id="periodOverlay">
     <div class="period-modal">
         <div class="period-modal-header">
@@ -579,20 +583,16 @@
     // 6. 事件
     // ============================================================
     const bindEvents = () => {
-        // 下载图片：隐藏按钮行的内容，并移除其底部间距，让下方内容上移一行
+        // 下载图片：给 btnBar 加 hidden 类，隐藏按钮并移除边距
         byId("downloadBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             const btnBar = byId("btnBar");
             const canvasEl = document.querySelector(".canvas");
             const origStyle = canvasEl.getAttribute("style") || "";
 
-            // 用 visibility 隐藏按钮内容，保留 flex 布局，避免恢复时跑位
-            btnBar.style.visibility = "hidden";
-            // 把 20px 底部间距去掉，让下方内容向上移动
-            btnBar.style.marginBottom = "0";
+            btnBar.classList.add("hidden");
             canvasEl.style.boxShadow = "none";
 
-            // 等一帧让浏览器完成布局重排
             await new Promise(r => requestAnimationFrame(r));
 
             try {
@@ -616,9 +616,7 @@
                 console.error("截图失败:", err);
                 alert("截图失败，请查看控制台。");
             } finally {
-                // 恢复按钮内容与底部间距
-                btnBar.style.visibility = "";
-                btnBar.style.marginBottom = "";
+                btnBar.classList.remove("hidden");
                 canvasEl.setAttribute("style", origStyle);
             }
         });
