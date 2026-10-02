@@ -495,7 +495,6 @@
             for (let i = 0; i < 3; i++) bossData[i].push(bossHps[i]);
         });
 
-        // 图表 1：强敌总血量演化
         if (!chartInstance1) chartInstance1 = echarts.init(byId("totalChart"));
         chartInstance1.setOption({
             title: { text: `强敌总血量演化 (N6)`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
@@ -506,7 +505,6 @@
             series: [{ name: "总血量", type: "line", data: totalData, smooth: false, lineStyle: { color: "#a855f7", width: 2 }, itemStyle: { color: "#a855f7" } }]
         });
 
-        // 图表 2：各强敌血量演化（图例与曲线不重叠）
         if (!chartInstance2) chartInstance2 = echarts.init(byId("bossChart"));
         chartInstance2.setOption({
             title: { text: `各强敌血量演化 (N6)`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
@@ -573,13 +571,17 @@
     // 6. 事件
     // ============================================================
     const bindEvents = () => {
+        // 下载图片（同时隐藏两个按钮）
         byId("downloadBtn").addEventListener("click", async (e) => {
             e.preventDefault();
-            const btn = byId("downloadBtn");
+            const downloadBtn = byId("downloadBtn");
+            const toggleBtn = byId("toggleFormatBtn");
             const canvasEl = document.querySelector(".canvas");
             const origStyle = canvasEl.getAttribute("style") || "";
 
-            btn.style.display = "none";
+            // 用 visibility: hidden 保持占位，避免布局跳动
+            downloadBtn.style.visibility = "hidden";
+            toggleBtn.style.visibility = "hidden";
             canvasEl.style.boxShadow = "none";
 
             try {
@@ -603,11 +605,13 @@
                 console.error("截图失败:", err);
                 alert("截图失败，请查看控制台。");
             } finally {
-                btn.style.display = "";
+                downloadBtn.style.visibility = "";
+                toggleBtn.style.visibility = "";
                 canvasEl.setAttribute("style", origStyle);
             }
         });
 
+        // 切换图片格式
         byId("toggleFormatBtn").addEventListener("click", () => {
             currentImageFormat = currentImageFormat === 'webp' ? 'png' : 'webp';
             byId("toggleFormatBtn").textContent = currentImageFormat === 'webp'
@@ -616,6 +620,7 @@
             renderMonsterCards();
         });
 
+        // 期数切换
         byId("prevSchedule").addEventListener("click", async (e) => {
             e.stopPropagation();
             currentIndex = (currentIndex + 1) % allEntries.length;
@@ -629,6 +634,7 @@
             render();
         });
 
+        // 期数选择弹层
         byId("periodTrigger").addEventListener("click", (e) => {
             e.stopPropagation();
             openPeriodModal();
@@ -641,6 +647,7 @@
             if (e.key === "Escape") closePeriodModal();
         });
 
+        // 窗口缩放
         window.addEventListener('resize', () => {
             if (chartInstance1) chartInstance1.resize();
             if (chartInstance2) chartInstance2.resize();
