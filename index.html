@@ -20,10 +20,31 @@
         .diff-btn:hover { border-color: #a855f7; }
         .monster-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 30px; }
         .monster-card { display: flex; flex-direction: column; align-items: center; position: relative; padding: 10px; border-radius: 8px; }
-        .monster-card::before { content: ''; position: absolute; top: -20px; width: 220px; height: 220px; background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0) 70%); z-index: 0; border-radius: 50%; pointer-events: none; }
-        .monster-icon { width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #6366f1); border: 4px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 25px rgba(168, 85, 247, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.2); display: flex; align-items: center; justify-content: center; font-size: 50px; z-index: 1; margin-bottom: 15px; position: relative; overflow: hidden; }
-        .monster-icon img { width: 100%; height: 100%; object-fit: cover; }
-        .monster-icon .fallback { font-size: 50px; font-weight: 700; color: #fff; text-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+
+        /* 怪物图片：不再用圆形，直接展示，尺寸更大 */
+        .monster-icon {
+            width: 180px;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .monster-icon img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 6px 12px rgba(168, 85, 247, 0.35));
+        }
+        .monster-icon .fallback {
+            font-size: 60px;
+            font-weight: 700;
+            color: #a855f7;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
         .monster-name { font-size: 15px; font-weight: 700; color: #1e3a8a; text-align: center; margin-bottom: 2px; z-index: 1; }
         .monster-sub { font-size: 12px; color: #666; text-align: center; margin-bottom: 10px; font-style: italic; z-index: 1; }
         .traits-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; z-index: 1; width: 100%; align-items: center; }
@@ -129,6 +150,7 @@
     // ============================================================
     // 3. 血量计算
     // ============================================================
+    /** 直接读取基础血量表（v2 已在 base_hp.json 里翻倍，无需再做处理） */
     function getBaseHp(level, type = 'v1') {
         if (!baseHpTable) return 0;
         const table = baseHpTable[type] || baseHpTable.v1;
@@ -173,6 +195,7 @@
         return `<span class="elem-mini"><img src="${basePath}.avif" alt="${elemCN}" onerror="${fallback}"></span>`;
     };
 
+    /** 将字符串中 *元素* 替换为元素图片，其余文本（含 |）原样保留 */
     const renderTraitItem = (item, iconFile) => {
         const html = item.replace(/\*([^*]+)\*/g, (_, elemCN) => renderElemMini(elemCN.trim()));
         return `<div class="trait">
@@ -231,7 +254,7 @@
                 ${renderTraits(boss)}
                 <div class="stats-row">${statsHtml}</div>
                 <div class="mechanism-box">
-                    <div class="mech-title">妮可萝莉的研究</div>
+                    <div class="mech-title">怪物机制研究</div>
                     ${mechHtml || '<div class="mech-line">无机制说明</div>'}
                 </div>
             `;
