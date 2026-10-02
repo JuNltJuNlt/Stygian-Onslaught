@@ -32,7 +32,6 @@
         .period-switcher .arrow { font-size: 20px; font-weight: bold; cursor: pointer; user-select: none; color: #000; padding: 0 5px; }
         .period-switcher .date { font-size: 14px; font-weight: 600; color: #000; text-align: center; line-height: 1.3; min-width: 180px; }
 
-        /* 中间日期区域可点击 */
         .period-trigger {
             cursor: pointer;
             user-select: none;
@@ -42,7 +41,6 @@
         }
         .period-trigger:hover { background: rgba(168, 85, 247, 0.12); }
 
-        /* 遮罩层 */
         .period-overlay {
             display: none;
             position: fixed;
@@ -54,7 +52,6 @@
         }
         .period-overlay.show { display: flex; }
 
-        /* 弹窗 */
         .period-modal {
             background: #fff;
             border-radius: 16px;
@@ -139,7 +136,15 @@
             text-shadow: 0 4px 6px rgba(0,0,0,0.15);
         }
 
-        .monster-name { font-size: 15px; font-weight: 700; color: #1e3a8a; text-align: center; margin-bottom: 2px; z-index: 1; }
+        .monster-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e3a8a;
+            text-align: center;
+            margin-bottom: 4px;
+            z-index: 1;
+        }
+
         .monster-sub { font-size: 12px; color: #666; text-align: center; margin-bottom: 10px; z-index: 1; }
         .traits-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; z-index: 1; width: 100%; align-items: center; }
         .trait { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #333; flex-wrap: wrap; justify-content: center; }
@@ -155,7 +160,11 @@
         .mechanism-box { width: 100%; background-color: #ffffff; border: 3px solid #1a1a1a; border-radius: 6px; padding: 12px 14px; font-size: 12px; line-height: 1.6; color: #1a1a1a; text-align: left; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 0 0 1px #fff; z-index: 1; min-height: 240px; flex-grow: 1; }
         .mechanism-box .mech-title { font-weight: 800; font-size: 13px; margin-bottom: 6px; color: #000; }
         .mechanism-box .mech-line { margin-bottom: 4px; text-align: justify; }
-        .mechanism-box .mech-highlight { font-weight: 800; color: #c00000; }
+
+        .mechanism-box .mech-highlight {
+            font-weight: 800;
+            color: #7e22ce;
+        }
 
         .chart-section { border-top: 2px solid #eee; padding-top: 20px; display: flex; flex-direction: column; gap: 20px; }
         .chart-wrapper { width: 100%; height: 260px; position: relative; }
@@ -284,6 +293,19 @@
         return Math.round(baseHp * relHp * mult);
     }
 
+    /**
+     * 用给定相对血量算某一档的血量（用于 hp_display 的"一管血量"）
+     */
+    function calcHpWithRel(boss, diffIndex, relHp) {
+        const levels = boss.levels || [95, 95, 95, 95, 95, 95];
+        const multipliers = boss.multipliers || [0.15, 0.30, 0.55, 1.00, 1.79, 3.92];
+        const level = levels[diffIndex] || 95;
+        const mult = multipliers[diffIndex] || 1.0;
+        const baseType = boss.base_type || 'v1';
+        const baseHp = getBaseHp(level, baseType);
+        return Math.round(baseHp * relHp * mult);
+    }
+
     // ============================================================
     // 4. 渲染
     // ============================================================
@@ -352,9 +374,22 @@
                 const hp = calcMonsterHp(boss, idx);
                 const mult = (boss.multipliers || [0.15,0.30,0.55,1.00,1.79,3.92])[idx] || 1;
                 const level = (boss.levels || [95,95,95,95,95,95])[idx] || 95;
+
+                // 显示处理：优先 base_rel_hp → base → 直接显示 hp
+                let hpText = String(hp);
+                if (boss.hp_display && boss.hp_display.base_rel_hp && boss.hp_display.times) {
+                    const oneHp = calcHpWithRel(boss, idx, boss.hp_display.base_rel_hp);
+                    hpText = `${oneHp} × ${boss.hp_display.times}`;
+                } else if (Array.isArray(boss.hp_display) && boss.hp_display[idx]) {
+                    const d = boss.hp_display[idx];
+                    hpText = `${d.base} × ${d.times}`;
+                } else if (boss.hp_display && boss.hp_display.base && boss.hp_display.times) {
+                    hpText = `${boss.hp_display.base} × ${boss.hp_display.times}`;
+                }
+
                 return `<div class="stat-item">
                             <span class="stat-label">N${idx+1}</span>
-                            <span class="stat-value">${hp}</span>
+                            <span class="stat-value">${hpText}</span>
                             <span class="stat-percent">Lv${level} · ${(mult*100).toFixed(0)}%</span>
                         </div>`;
             }).join('');
@@ -487,7 +522,6 @@
     // 6. 事件
     // ============================================================
     const bindEvents = () => {
-        // 下载图片
         byId("downloadBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             const btn = byId("downloadBtn");
@@ -523,7 +557,6 @@
             }
         });
 
-        // 期数切换：左右箭头
         byId("prevSchedule").addEventListener("click", async (e) => {
             e.stopPropagation();
             currentIndex = (currentIndex + 1) % allEntries.length;
@@ -537,13 +570,11 @@
             render();
         });
 
-        // 点击中间日期区域 → 打开弹层
         byId("periodTrigger").addEventListener("click", (e) => {
             e.stopPropagation();
             openPeriodModal();
         });
 
-        // 关闭弹层：× 或点击遮罩空白
         byId("periodModalClose").addEventListener("click", closePeriodModal);
         byId("periodOverlay").addEventListener("click", (e) => {
             if (e.target.id === "periodOverlay") closePeriodModal();
@@ -552,7 +583,6 @@
             if (e.key === "Escape") closePeriodModal();
         });
 
-        // 窗口缩放
         window.addEventListener('resize', () => {
             if (chartInstance1) chartInstance1.resize();
             if (chartInstance2) chartInstance2.resize();
