@@ -25,7 +25,6 @@
         .download-btn:hover { background: rgba(168, 85, 247, 0.25); border-color: #a855f7; }
         .download-btn:active { transform: scale(0.97); }
 
-        /* 右上角按钮组 + 勾选框 */
         #btnBar {
             position: absolute;
             top: 30px;
@@ -250,7 +249,6 @@
 <body>
 
 <div class="canvas">
-    <!-- 右上角：按钮行 + 勾选框（框在文字右边） -->
     <div id="btnBar">
         <div class="btn-row">
             <button class="download-btn" id="downloadBtn">下载图片</button>
@@ -283,7 +281,6 @@
     </div>
 </div>
 
-<!-- 期数选择弹层 -->
 <div class="period-overlay" id="periodOverlay">
     <div class="period-modal">
         <div class="period-modal-header">
@@ -313,7 +310,7 @@
     let chartInstance1 = null;
     let chartInstance2 = null;
     let currentImageFormat = 'webp';
-    let chartLevel = 6;   // 6 或 5，控制图表使用哪一档的血量
+    let chartLevel = 6;
     const monsterCache = {};
 
     const byId = (id) => document.getElementById(id);
@@ -529,7 +526,7 @@
         const totalData = [];
         const bossData = [[], [], []];
 
-        const diffIdx = chartLevel - 1;   // N6→5, N5→4
+        const diffIdx = chartLevel - 1;
         const suffix = chartLevel === 6 ? "N6" : "N5";
 
         sortedEntries.forEach(entry => {
@@ -557,6 +554,7 @@
             series: [{ name: "总血量", type: "line", data: totalData, smooth: false, lineStyle: { color: "#a855f7", width: 2 }, itemStyle: { color: "#a855f7" } }]
         });
 
+        // 强敌 1 绿色 (#10b981)，强敌 2 橙色 (#f59e0b)，强敌 3 蓝色 (#3b82f6)
         if (!chartInstance2) chartInstance2 = echarts.init(byId("bossChart"));
         chartInstance2.setOption({
             title: { text: `各强敌血量演化 (${suffix})`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
@@ -566,9 +564,9 @@
             xAxis: { type: "category", data: labels, axisLabel: { fontSize: 10, rotate: 45 } },
             yAxis: { type: "value", axisLabel: { fontSize: 10 } },
             series: [
-                { name: "强敌 1", type: "line", data: bossData[0], smooth: false, lineStyle: { color: "#3b82f6" }, itemStyle: { color: "#3b82f6" } },
+                { name: "强敌 1", type: "line", data: bossData[0], smooth: false, lineStyle: { color: "#10b981" }, itemStyle: { color: "#10b981" } },
                 { name: "强敌 2", type: "line", data: bossData[1], smooth: false, lineStyle: { color: "#f59e0b" }, itemStyle: { color: "#f59e0b" } },
-                { name: "强敌 3", type: "line", data: bossData[2], smooth: false, lineStyle: { color: "#10b981" }, itemStyle: { color: "#10b981" } }
+                { name: "强敌 3", type: "line", data: bossData[2], smooth: false, lineStyle: { color: "#3b82f6" }, itemStyle: { color: "#3b82f6" } }
             ]
         });
     };
@@ -623,7 +621,6 @@
     // 6. 事件
     // ============================================================
     const bindEvents = () => {
-        // 下载图片：整组隐藏
         byId("downloadBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             const btnBar = byId("btnBar");
@@ -661,7 +658,6 @@
             }
         });
 
-        // 切换图片格式
         byId("toggleFormatBtn").addEventListener("click", () => {
             currentImageFormat = currentImageFormat === 'webp' ? 'png' : 'webp';
             byId("toggleFormatBtn").textContent = currentImageFormat === 'webp'
@@ -670,13 +666,11 @@
             renderMonsterCards();
         });
 
-        // 勾选框：切换 N5 / N6 的演化图
         byId("n5Toggle").addEventListener("change", (e) => {
             chartLevel = e.target.checked ? 5 : 6;
             renderCharts();
         });
 
-        // 期数切换
         byId("prevSchedule").addEventListener("click", async (e) => {
             e.stopPropagation();
             currentIndex = (currentIndex + 1) % allEntries.length;
@@ -690,7 +684,6 @@
             render();
         });
 
-        // 期数选择弹层
         byId("periodTrigger").addEventListener("click", (e) => {
             e.stopPropagation();
             openPeriodModal();
@@ -703,7 +696,6 @@
             if (e.key === "Escape") closePeriodModal();
         });
 
-        // 窗口缩放
         window.addEventListener('resize', () => {
             if (chartInstance1) chartInstance1.resize();
             if (chartInstance2) chartInstance2.resize();
