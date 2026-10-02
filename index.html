@@ -633,4 +633,59 @@
         });
 
         // 期数切换
-        byId("prevSchedule").addEventListener("click
+        byId("prevSchedule").addEventListener("click", async (e) => {
+            e.stopPropagation();
+            currentIndex = (currentIndex + 1) % allEntries.length;
+            await loadCurrentMonsters();
+            render();
+        });
+        byId("nextSchedule").addEventListener("click", async (e) => {
+            e.stopPropagation();
+            currentIndex = (currentIndex - 1 + allEntries.length) % allEntries.length;
+            await loadCurrentMonsters();
+            render();
+        });
+
+        // 期数选择弹层
+        byId("periodTrigger").addEventListener("click", (e) => {
+            e.stopPropagation();
+            openPeriodModal();
+        });
+        byId("periodModalClose").addEventListener("click", closePeriodModal);
+        byId("periodOverlay").addEventListener("click", (e) => {
+            if (e.target.id === "periodOverlay") closePeriodModal();
+        });
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closePeriodModal();
+        });
+
+        // 窗口缩放
+        window.addEventListener('resize', () => {
+            if (chartInstance1) chartInstance1.resize();
+            if (chartInstance2) chartInstance2.resize();
+        });
+    };
+
+    // ============================================================
+    // 7. 初始化
+    // ============================================================
+    async function init() {
+        try {
+            await loadBaseHpTable();
+            allEntries = await loadIndex();
+            if (!allEntries.length) throw new Error('index.json 为空');
+            currentIndex = 0;
+            await loadCurrentMonsters();
+            bindEvents();
+            await render();
+        } catch (err) {
+            console.error('初始化失败:', err);
+            byId("monsterRow").innerHTML = `<div style="grid-column: span 3; text-align: center; color: red; padding: 50px;">数据加载失败: ${err.message}</div>`;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+</script>
+
+</body>
+</html>
