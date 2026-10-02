@@ -25,18 +25,38 @@
         .download-btn:hover { background: rgba(168, 85, 247, 0.25); border-color: #a855f7; }
         .download-btn:active { transform: scale(0.97); }
 
-        /* 按钮组绝对定位到画板右上角 */
+        /* 右上角按钮组 + 勾选框 */
         #btnBar {
             position: absolute;
             top: 30px;
             right: 40px;
             display: flex;
+            flex-direction: column;
+            align-items: flex-end;
             gap: 10px;
             z-index: 10;
         }
-        /* 下载时整行消失（不占位） */
+        #btnBar .btn-row {
+            display: flex;
+            gap: 10px;
+        }
         #btnBar.hidden {
             display: none;
+        }
+        .chart-mode-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+        }
+        .chart-mode-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #a855f7;
         }
 
         .header-section { display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 20px; }
@@ -230,10 +250,16 @@
 <body>
 
 <div class="canvas">
-    <!-- 两个按钮绝对定位在右上角，与标题大致等高 -->
+    <!-- 右上角：按钮行 + 勾选框（框在文字右边） -->
     <div id="btnBar">
-        <button class="download-btn" id="downloadBtn">下载图片</button>
-        <button class="download-btn" id="toggleFormatBtn">切换图片格式-png</button>
+        <div class="btn-row">
+            <button class="download-btn" id="downloadBtn">下载图片</button>
+            <button class="download-btn" id="toggleFormatBtn">切换图片格式-png</button>
+        </div>
+        <label class="chart-mode-label">
+            <span>N5血量演化图</span>
+            <input type="checkbox" id="n5Toggle">
+        </label>
     </div>
 
     <div class="header-section"><h1>幽境危战</h1></div>
@@ -287,6 +313,7 @@
     let chartInstance1 = null;
     let chartInstance2 = null;
     let currentImageFormat = 'webp';
+    let chartLevel = 6;   // 6 或 5，控制图表使用哪一档的血量
     const monsterCache = {};
 
     const byId = (id) => document.getElementById(id);
@@ -502,15 +529,18 @@
         const totalData = [];
         const bossData = [[], [], []];
 
+        const diffIdx = chartLevel - 1;   // N6→5, N5→4
+        const suffix = chartLevel === 6 ? "N6" : "N5";
+
         sortedEntries.forEach(entry => {
             let total = 0;
             const bossHps = [0, 0, 0];
             (entry.bosses || []).forEach((name, idx) => {
                 const m = monsterMap[name];
                 if (m) {
-                    const hpN6 = calcMonsterHp(m, 5);
-                    total += hpN6;
-                    if (idx < 3) bossHps[idx] = hpN6;
+                    const hpN = calcMonsterHp(m, diffIdx);
+                    total += hpN;
+                    if (idx < 3) bossHps[idx] = hpN;
                 }
             });
             totalData.push(total);
@@ -519,7 +549,7 @@
 
         if (!chartInstance1) chartInstance1 = echarts.init(byId("totalChart"));
         chartInstance1.setOption({
-            title: { text: `强敌总血量演化 (N6)`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
+            title: { text: `强敌总血量演化 (${suffix})`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
             tooltip: { trigger: "axis" },
             grid: { left: "5%", right: "5%", top: "10%", bottom: "1%", containLabel: true },
             xAxis: { type: "category", data: labels, axisLabel: { fontSize: 10, rotate: 45 } },
@@ -529,7 +559,7 @@
 
         if (!chartInstance2) chartInstance2 = echarts.init(byId("bossChart"));
         chartInstance2.setOption({
-            title: { text: `各强敌血量演化 (N6)`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
+            title: { text: `各强敌血量演化 (${suffix})`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
             tooltip: { trigger: "axis" },
             legend: { top: "8%", left: "center", textStyle: { fontSize: 10 } },
             grid: { left: "5%", right: "5%", top: "18%", bottom: "1%", containLabel: true },
@@ -593,7 +623,7 @@
     // 6. 事件
     // ============================================================
     const bindEvents = () => {
-        // 下载图片：btnBar 加 hidden 类，整行消失，下方内容上移
+        // 下载图片：整组隐藏
         byId("downloadBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             const btnBar = byId("btnBar");
@@ -638,6 +668,12 @@
                 ? '切换图片格式-png'
                 : '切换图片格式-webp';
             renderMonsterCards();
+        });
+
+        // 勾选框：切换 N5 / N6 的演化图
+        byId("n5Toggle").addEventListener("change", (e) => {
+            chartLevel = e.target.checked ? 5 : 6;
+            renderCharts();
         });
 
         // 期数切换
