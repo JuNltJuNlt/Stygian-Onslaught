@@ -136,8 +136,9 @@
             text-shadow: 0 4px 6px rgba(0,0,0,0.15);
         }
 
+        /* 怪物名字：调小到 17px */
         .monster-name {
-            font-size: 20px;
+            font-size: 17px;
             font-weight: 700;
             color: #1e3a8a;
             text-align: center;
@@ -293,9 +294,6 @@
         return Math.round(baseHp * relHp * mult);
     }
 
-    /**
-     * 用给定相对血量算某一档的血量（用于 hp_display 的"一管血量"）
-     */
     function calcHpWithRel(boss, diffIndex, relHp) {
         const levels = boss.levels || [95, 95, 95, 95, 95, 95];
         const multipliers = boss.multipliers || [0.15, 0.30, 0.55, 1.00, 1.79, 3.92];
@@ -375,7 +373,6 @@
                 const mult = (boss.multipliers || [0.15,0.30,0.55,1.00,1.79,3.92])[idx] || 1;
                 const level = (boss.levels || [95,95,95,95,95,95])[idx] || 95;
 
-                // 显示处理：优先 base_rel_hp → base → 直接显示 hp
                 let hpText = String(hp);
                 if (boss.hp_display && boss.hp_display.base_rel_hp && boss.hp_display.times) {
                     const oneHp = calcHpWithRel(boss, idx, boss.hp_display.base_rel_hp);
