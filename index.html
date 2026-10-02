@@ -9,7 +9,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif; }
         body { background-color: #f5f6fa; display: flex; justify-content: center; padding: 20px; color: #333; }
-        .canvas { position: relative; width: 1240px; background-color: #ffffff; box-shadow: 0 0 30px rgba(0, 0, 0, 0.1); padding: 30px 40px 50px; border-radius: 8px; overflow: hidden; }
+        .canvas { position: relative; width: 1240px; background-color: #ffffff; box-shadow: 0 0 30px rgba(0, 0, 0, 0.1); padding: 30px 40px 30px; border-radius: 8px; overflow: hidden; }
 
         .download-btn {
             background: rgba(168, 85, 247, 0.1);
@@ -208,7 +208,7 @@
             flex-direction: column;
             gap: 0;
         }
-        .chart-wrapper { width: 100%; height: 420px; position: relative; }
+        .chart-wrapper { width: 100%; height: 360px; position: relative; }
 
         @media (max-width: 1250px) { .canvas { width: 100%; padding: 20px; } .monster-row { gap: 15px; } }
     </style>
@@ -271,7 +271,7 @@
     let currentMonstersData = [];
     let chartInstance1 = null;
     let chartInstance2 = null;
-    let currentImageFormat = 'webp';   // 'webp' 或 'png'
+    let currentImageFormat = 'webp';
     const monsterCache = {};
 
     const byId = (id) => document.getElementById(id);
@@ -500,19 +500,19 @@
         chartInstance1.setOption({
             title: { text: `强敌总血量演化 (N6)`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
             tooltip: { trigger: "axis" },
-            grid: { left: "5%", right: "5%", top: "10%", bottom: "6%", containLabel: true },
+            grid: { left: "5%", right: "5%", top: "10%", bottom: "3%", containLabel: true },
             xAxis: { type: "category", data: labels, axisLabel: { fontSize: 10, rotate: 45 } },
             yAxis: { type: "value", axisLabel: { fontSize: 10 } },
             series: [{ name: "总血量", type: "line", data: totalData, smooth: false, lineStyle: { color: "#a855f7", width: 2 }, itemStyle: { color: "#a855f7" } }]
         });
 
-        // 图表 2：各强敌血量演化（图例不与曲线相交）
+        // 图表 2：各强敌血量演化（图例与曲线不重叠）
         if (!chartInstance2) chartInstance2 = echarts.init(byId("bossChart"));
         chartInstance2.setOption({
             title: { text: `各强敌血量演化 (N6)`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
             tooltip: { trigger: "axis" },
             legend: { top: "8%", left: "center", textStyle: { fontSize: 10 } },
-            grid: { left: "5%", right: "5%", top: "18%", bottom: "6%", containLabel: true },
+            grid: { left: "5%", right: "5%", top: "18%", bottom: "3%", containLabel: true },
             xAxis: { type: "category", data: labels, axisLabel: { fontSize: 10, rotate: 45 } },
             yAxis: { type: "value", axisLabel: { fontSize: 10 } },
             series: [
