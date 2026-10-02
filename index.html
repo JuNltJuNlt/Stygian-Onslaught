@@ -11,7 +11,7 @@
         body { background-color: #f5f6fa; display: flex; justify-content: center; padding: 20px; color: #333; }
         .canvas { position: relative; width: 1240px; background-color: #ffffff; box-shadow: 0 0 30px rgba(0, 0, 0, 0.1); padding: 30px 40px 50px; border-radius: 8px; overflow: hidden; }
 
-        /* 下载按钮：普通按钮样式，由父容器居中 */
+        /* 下载按钮 */
         .download-btn {
             background: rgba(168, 85, 247, 0.1);
             border: 1px solid rgba(168, 85, 247, 0.5);
@@ -354,7 +354,7 @@
     // 5. 事件
     // ============================================================
     const bindEvents = () => {
-        // ===== 下载图片 =====
+        // 下载图片
         byId("downloadBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             const btn = byId("downloadBtn");
@@ -390,7 +390,7 @@
             }
         });
 
-        // ===== 期数切换 =====
+        // 期数切换
         byId("prevSchedule").addEventListener("click", async () => {
             currentIndex = (currentIndex + 1) % allEntries.length;
             await loadCurrentMonsters();
@@ -402,7 +402,7 @@
             render();
         });
 
-        // ===== 窗口缩放重绘 =====
+        // 窗口缩放
         window.addEventListener('resize', () => {
             if (chartInstance1) chartInstance1.resize();
             if (chartInstance2) chartInstance2.resize();
