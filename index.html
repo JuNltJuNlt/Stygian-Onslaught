@@ -25,10 +25,9 @@
         .download-btn:hover { background: rgba(168, 85, 247, 0.25); border-color: #a855f7; }
         .download-btn:active { transform: scale(0.97); }
 
-        /* 下载时给按钮行加 hidden：隐藏 + 去掉底部边距 */
+        /* 下载时整行按钮消失（不占位） */
         #btnBar.hidden {
-            visibility: hidden;
-            margin-bottom: 0;
+            display: none;
         }
 
         .header-section { display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 20px; }
@@ -232,6 +231,7 @@
         <span class="arrow" id="nextSchedule">▶</span>
     </div>
 
+    <!-- 两个按钮包在一个容器里，下载时整行消失 -->
     <div id="btnBar" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
         <button class="download-btn" id="downloadBtn">下载图片</button>
         <button class="download-btn" id="toggleFormatBtn">切换图片格式-png</button>
@@ -248,6 +248,7 @@
     </div>
 </div>
 
+<!-- 期数选择弹层 -->
 <div class="period-overlay" id="periodOverlay">
     <div class="period-modal">
         <div class="period-modal-header">
@@ -583,7 +584,7 @@
     // 6. 事件
     // ============================================================
     const bindEvents = () => {
-        // 下载图片：给 btnBar 加 hidden 类，隐藏按钮并移除边距
+        // 下载图片：btnBar 加 hidden 类，整行消失，下方内容上移
         byId("downloadBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             const btnBar = byId("btnBar");
@@ -593,6 +594,7 @@
             btnBar.classList.add("hidden");
             canvasEl.style.boxShadow = "none";
 
+            // 等一帧让浏览器完成布局重排后再截图
             await new Promise(r => requestAnimationFrame(r));
 
             try {
@@ -616,6 +618,7 @@
                 console.error("截图失败:", err);
                 alert("截图失败，请查看控制台。");
             } finally {
+                // 移除 hidden 类，按钮行恢复原样
                 btnBar.classList.remove("hidden");
                 canvasEl.setAttribute("style", origStyle);
             }
