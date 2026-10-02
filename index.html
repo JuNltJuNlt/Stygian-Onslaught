@@ -100,13 +100,20 @@
         return data.entries || [];
     }
 
+    /** 加载单个怪物 JSON；若不存在则返回 null（不会中断页面） */
     async function loadMonster(name) {
-        if (monsterCache[name]) return monsterCache[name];
-        const res = await fetch(`${MONSTER_ROOT}/${name}.json`);
-        if (!res.ok) throw new Error(`无法加载怪物 ${name}.json`);
-        const data = await res.json();
-        monsterCache[name] = data;
-        return data;
+        if (monsterCache[name] !== undefined) return monsterCache[name];
+        try {
+            const res = await fetch(`${MONSTER_ROOT}/${name}.json`);
+            if (!res.ok) throw new Error(`无法加载怪物 ${name}.json`);
+            const data = await res.json();
+            monsterCache[name] = data;
+            return data;
+        } catch (err) {
+            console.warn(`跳过不存在的怪物: ${name}`);
+            monsterCache[name] = null;
+            return null;
+        }
     }
 
     async function loadCurrentMonsters() {
@@ -115,7 +122,8 @@
             currentMonstersData = [];
             return;
         }
-        currentMonstersData = await Promise.all(entry.bosses.map(name => loadMonster(name)));
+        const list = await Promise.all(entry.bosses.map(name => loadMonster(name)));
+        currentMonstersData = list.filter(m => m !== null);
     }
 
     // ============================================================
@@ -165,10 +173,6 @@
         return `<span class="elem-mini"><img src="${basePath}.avif" alt="${elemCN}" onerror="${fallback}"></span>`;
     };
 
-    /**
-     * 渲染单个优势/劣势项。
-     * 将字符串中所有 *元素* 替换为对应元素图片，其余文本（含 |）原样保留。
-     */
     const renderTraitItem = (item, iconFile) => {
         const html = item.replace(/\*([^*]+)\*/g, (_, elemCN) => renderElemMini(elemCN.trim()));
         return `<div class="trait">
@@ -240,7 +244,8 @@
 
         const allMonsterNames = new Set();
         allEntries.forEach(e => (e.bosses || []).forEach(n => allMonsterNames.add(n)));
-        const allMonstersList = await Promise.all([...allMonsterNames].map(n => loadMonster(n)));
+        const allMonstersList = (await Promise.all([...allMonsterNames].map(n => loadMonster(n))))
+            .filter(m => m !== null);
         const monsterMap = {};
         allMonstersList.forEach(m => { if (m && m.name) monsterMap[m.name] = m; });
 
