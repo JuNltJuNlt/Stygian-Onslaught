@@ -9,7 +9,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif; }
         body { background-color: #f5f6fa; display: flex; justify-content: center; padding: 20px; color: #333; }
-        .canvas { position: relative; width: 1240px; background-color: #ffffff; box-shadow: 0 0 30px rgba(0, 0, 0, 0.1); padding: 30px 40px 30px; border-radius: 8px; overflow: hidden; }
+        .canvas { position: relative; width: 1240px; background-color: #ffffff; box-shadow: 0 0 30px rgba(0, 0, 0, 0.1); padding: 30px 40px 10px; border-radius: 8px; overflow: hidden; }
 
         .download-btn {
             background: rgba(168, 85, 247, 0.1);
@@ -25,7 +25,16 @@
         .download-btn:hover { background: rgba(168, 85, 247, 0.25); border-color: #a855f7; }
         .download-btn:active { transform: scale(0.97); }
 
-        /* 下载时整行按钮消失（不占位） */
+        /* 按钮组绝对定位到画板右上角 */
+        #btnBar {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        /* 下载时整行消失（不占位） */
         #btnBar.hidden {
             display: none;
         }
@@ -221,6 +230,12 @@
 <body>
 
 <div class="canvas">
+    <!-- 两个按钮绝对定位在右上角，与标题大致等高 -->
+    <div id="btnBar">
+        <button class="download-btn" id="downloadBtn">下载图片</button>
+        <button class="download-btn" id="toggleFormatBtn">切换图片格式-png</button>
+    </div>
+
     <div class="header-section"><h1>幽境危战</h1></div>
 
     <div class="period-switcher">
@@ -229,12 +244,6 @@
             <span id="scheduleDate">加载中...</span>
         </span>
         <span class="arrow" id="nextSchedule">▶</span>
-    </div>
-
-    <!-- 两个按钮包在一个容器里，下载时整行消失 -->
-    <div id="btnBar" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
-        <button class="download-btn" id="downloadBtn">下载图片</button>
-        <button class="download-btn" id="toggleFormatBtn">切换图片格式-png</button>
     </div>
 
     <div class="difficulty-switcher" id="difficultySwitcher">
@@ -512,7 +521,7 @@
         chartInstance1.setOption({
             title: { text: `强敌总血量演化 (N6)`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
             tooltip: { trigger: "axis" },
-            grid: { left: "5%", right: "5%", top: "10%", bottom: "3%", containLabel: true },
+            grid: { left: "5%", right: "5%", top: "10%", bottom: "1%", containLabel: true },
             xAxis: { type: "category", data: labels, axisLabel: { fontSize: 10, rotate: 45 } },
             yAxis: { type: "value", axisLabel: { fontSize: 10 } },
             series: [{ name: "总血量", type: "line", data: totalData, smooth: false, lineStyle: { color: "#a855f7", width: 2 }, itemStyle: { color: "#a855f7" } }]
@@ -523,7 +532,7 @@
             title: { text: `各强敌血量演化 (N6)`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
             tooltip: { trigger: "axis" },
             legend: { top: "8%", left: "center", textStyle: { fontSize: 10 } },
-            grid: { left: "5%", right: "5%", top: "18%", bottom: "3%", containLabel: true },
+            grid: { left: "5%", right: "5%", top: "18%", bottom: "1%", containLabel: true },
             xAxis: { type: "category", data: labels, axisLabel: { fontSize: 10, rotate: 45 } },
             yAxis: { type: "value", axisLabel: { fontSize: 10 } },
             series: [
@@ -594,7 +603,6 @@
             btnBar.classList.add("hidden");
             canvasEl.style.boxShadow = "none";
 
-            // 等一帧让浏览器完成布局重排后再截图
             await new Promise(r => requestAnimationFrame(r));
 
             try {
@@ -618,7 +626,6 @@
                 console.error("截图失败:", err);
                 alert("截图失败，请查看控制台。");
             } finally {
-                // 移除 hidden 类，按钮行恢复原样
                 btnBar.classList.remove("hidden");
                 canvasEl.setAttribute("style", origStyle);
             }
