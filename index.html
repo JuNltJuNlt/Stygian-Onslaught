@@ -5,10 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>幽境危战</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif; }
         body { background-color: #f5f6fa; display: flex; justify-content: center; padding: 20px; color: #333; }
         .canvas { position: relative; width: 1240px; background-color: #ffffff; box-shadow: 0 0 30px rgba(0, 0, 0, 0.1); padding: 30px 40px 50px; border-radius: 8px; overflow: hidden; }
+
+        /* 下载按钮：普通按钮样式，由父容器居中 */
+        .download-btn {
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            color: #7e22ce;
+            padding: 8px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .download-btn:hover {
+            background: rgba(168, 85, 247, 0.25);
+            border-color: #a855f7;
+        }
+        .download-btn:active {
+            transform: scale(0.97);
+        }
+
         .header-section { display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 20px; }
         .header-section h1 { font-size: 28px; font-weight: 700; letter-spacing: 3px; color: #000; text-align: center; }
         .period-switcher { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 0 auto 20px; width: fit-content; background: #fff; border: 2px solid #000; border-radius: 30px; padding: 6px 22px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
@@ -21,7 +43,6 @@
         .monster-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 30px; }
         .monster-card { display: flex; flex-direction: column; align-items: center; position: relative; padding: 10px; border-radius: 8px; }
 
-        /* 怪物图片：进一步放大到 240×240 */
         .monster-icon {
             width: 240px;
             height: 240px;
@@ -47,50 +68,17 @@
 
         .monster-name { font-size: 15px; font-weight: 700; color: #1e3a8a; text-align: center; margin-bottom: 2px; z-index: 1; }
         .monster-sub { font-size: 12px; color: #666; text-align: center; margin-bottom: 10px; z-index: 1; }
-
         .traits-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; z-index: 1; width: 100%; align-items: center; }
         .trait { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #333; flex-wrap: wrap; justify-content: center; }
         .trait > img { width: 18px; height: 18px; }
         .trait .trait-text { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: center; }
         .trait .elem-mini { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
         .trait .elem-mini img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* 血量区域：小幅放大 */
-        .stats-row {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            margin-bottom: 14px;
-            z-index: 1;
-            width: 100%;
-        }
-        .stats-row .stat-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 15px;
-            font-weight: 600;
-        }
-        .stats-row .stat-label {
-            color: #333;
-            min-width: 32px;
-            text-align: right;
-        }
-        .stats-row .stat-value {
-            color: #cc0000;
-            font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-            min-width: 108px;
-            text-align: right;
-        }
-        .stats-row .stat-percent {
-            color: #888;
-            font-size: 12px;
-            min-width: 72px;
-            text-align: left;
-        }
-
+        .stats-row { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 14px; z-index: 1; width: 100%; }
+        .stats-row .stat-item { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 600; }
+        .stats-row .stat-label { color: #333; min-width: 32px; text-align: right; }
+        .stats-row .stat-value { color: #cc0000; font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; min-width: 108px; text-align: right; }
+        .stats-row .stat-percent { color: #888; font-size: 12px; min-width: 72px; text-align: left; }
         .mechanism-box { width: 100%; background-color: #ffffff; border: 3px solid #1a1a1a; border-radius: 6px; padding: 12px 14px; font-size: 12px; line-height: 1.6; color: #1a1a1a; text-align: left; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 0 0 1px #fff; z-index: 1; min-height: 240px; flex-grow: 1; }
         .mechanism-box .mech-title { font-weight: 800; font-size: 13px; margin-bottom: 6px; color: #000; }
         .mechanism-box .mech-line { margin-bottom: 4px; text-align: justify; }
@@ -108,6 +96,12 @@
         <span class="date" id="scheduleDate">加载中...</span>
         <span class="arrow" id="nextSchedule">▶</span>
     </div>
+
+    <!-- 下载按钮放在期数切换器下方 -->
+    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+        <button class="download-btn" id="downloadBtn">下载图片</button>
+    </div>
+
     <div class="difficulty-switcher" id="difficultySwitcher">
         <div class="diff-btn" data-mode="1">N1-3</div>
         <div class="diff-btn active" data-mode="4">N4-6</div>
@@ -360,6 +354,43 @@
     // 5. 事件
     // ============================================================
     const bindEvents = () => {
+        // ===== 下载图片 =====
+        byId("downloadBtn").addEventListener("click", async (e) => {
+            e.preventDefault();
+            const btn = byId("downloadBtn");
+            const canvasEl = document.querySelector(".canvas");
+            const origStyle = canvasEl.getAttribute("style") || "";
+
+            btn.style.display = "none";
+            canvasEl.style.boxShadow = "none";
+
+            try {
+                const canvas = await html2canvas(canvasEl, {
+                    scale: 2,
+                    backgroundColor: "#ffffff",
+                    useCORS: true,
+                    allowTaint: true,
+                    windowWidth: canvasEl.scrollWidth,
+                    windowHeight: canvasEl.scrollHeight,
+                    width: canvasEl.scrollWidth,
+                    height: canvasEl.scrollHeight,
+                });
+
+                const a = document.createElement("a");
+                const entry = allEntries[currentIndex];
+                a.download = `幽境危战_${entry?.deadly_name || "未命名"}.png`;
+                a.href = canvas.toDataURL("image/png");
+                a.click();
+            } catch (err) {
+                console.error("截图失败:", err);
+                alert("截图失败，请查看控制台。");
+            } finally {
+                btn.style.display = "";
+                canvasEl.setAttribute("style", origStyle);
+            }
+        });
+
+        // ===== 期数切换 =====
         byId("prevSchedule").addEventListener("click", async () => {
             currentIndex = (currentIndex + 1) % allEntries.length;
             await loadCurrentMonsters();
@@ -370,6 +401,8 @@
             await loadCurrentMonsters();
             render();
         });
+
+        // ===== 窗口缩放重绘 =====
         window.addEventListener('resize', () => {
             if (chartInstance1) chartInstance1.resize();
             if (chartInstance2) chartInstance2.resize();
