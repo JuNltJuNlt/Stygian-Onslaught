@@ -118,12 +118,11 @@
         .diff-btn.active { border-color: #a855f7; background: #faf5ff; color: #7e22ce; box-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
         .diff-btn:hover { border-color: #a855f7; }
 
-        /* 三列等高对齐 */
         .monster-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 24px;
-            margin-bottom: 14px;    /* 原 30px → 14px */
+            margin-bottom: 14px;
             align-items: stretch;
         }
         .monster-card {
@@ -202,13 +201,12 @@
             color: #7e22ce;
         }
 
-        /* 图表区域：保留顶部分割线，缩小上间距与图间距 */
         .chart-section {
             border-top: 2px solid #eee;
-            padding-top: 12px;       /* 原 20px → 12px */
+            padding-top: 12px;
             display: flex;
             flex-direction: column;
-            gap: 10px;               /* 原 20px → 10px */
+            gap: 10px;
         }
         .chart-wrapper { width: 100%; height: 420px; position: relative; }
 
@@ -228,8 +226,9 @@
         <span class="arrow" id="nextSchedule">▶</span>
     </div>
 
-    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
         <button class="download-btn" id="downloadBtn">下载图片</button>
+        <button class="download-btn" id="toggleFormatBtn">切换图片格式-png</button>
     </div>
 
     <div class="difficulty-switcher" id="difficultySwitcher">
@@ -272,6 +271,7 @@
     let currentMonstersData = [];
     let chartInstance1 = null;
     let chartInstance2 = null;
+    let currentImageFormat = 'webp';   // 'webp' 或 'png'
     const monsterCache = {};
 
     const byId = (id) => document.getElementById(id);
@@ -434,9 +434,19 @@
                         </div>`;
             }).join('');
 
-            const monsterImg = `${IMAGE_ROOT}/monsters/${boss.name}.png`;
+            // 图片路径：根据当前格式选择文件夹
+            const folder    = currentImageFormat === 'webp' ? 'monsters'     : 'monsters-png';
+            const ext       = currentImageFormat === 'webp' ? 'webp'         : 'png';
+            const altFolder = currentImageFormat === 'webp' ? 'monsters-png' : 'monsters';
+            const altExt    = currentImageFormat === 'webp' ? 'png'          : 'webp';
+
+            const primary  = `${IMAGE_ROOT}/${folder}/${boss.name}.${ext}`;
+            const fallback = `${IMAGE_ROOT}/${altFolder}/${boss.name}.${altExt}`;
             const fallbackChar = (boss.name || '?').charAt(0);
-            const iconHtml = `<img src="${monsterImg}" alt="${boss.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'fallback\\'>${fallbackChar}</span>'">`;
+
+            const iconHtml = `<img src="${primary}" alt="${boss.name}" loading="lazy" decoding="async"
+                onerror="this.onerror=null; this.src='${fallback}';
+                         this.onerror=function(){ this.style.display='none'; this.parentElement.innerHTML='<span class=\\'fallback\\'>${fallbackChar}</span>'; }">`;
 
             const card = document.createElement('div');
             card.className = 'monster-card';
@@ -562,6 +572,7 @@
     // 6. 事件
     // ============================================================
     const bindEvents = () => {
+        // 下载图片
         byId("downloadBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             const btn = byId("downloadBtn");
@@ -597,6 +608,17 @@
             }
         });
 
+        // 切换图片格式
+        byId("toggleFormatBtn").addEventListener("click", () => {
+            currentImageFormat = currentImageFormat === 'webp' ? 'png' : 'webp';
+            byId("toggleFormatBtn").textContent = currentImageFormat === 'webp'
+                ? '切换图片格式-png'
+                : '切换图片格式-webp';
+            // 只重绘卡片，不重置期数和图表
+            renderMonsterCards();
+        });
+
+        // 期数切换
         byId("prevSchedule").addEventListener("click", async (e) => {
             e.stopPropagation();
             currentIndex = (currentIndex + 1) % allEntries.length;
@@ -610,11 +632,11 @@
             render();
         });
 
+        // 期数选择弹层
         byId("periodTrigger").addEventListener("click", (e) => {
             e.stopPropagation();
             openPeriodModal();
         });
-
         byId("periodModalClose").addEventListener("click", closePeriodModal);
         byId("periodOverlay").addEventListener("click", (e) => {
             if (e.target.id === "periodOverlay") closePeriodModal();
@@ -623,6 +645,7 @@
             if (e.key === "Escape") closePeriodModal();
         });
 
+        // 窗口缩放
         window.addEventListener('resize', () => {
             if (chartInstance1) chartInstance1.resize();
             if (chartInstance2) chartInstance2.resize();
