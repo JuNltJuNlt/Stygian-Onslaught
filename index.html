@@ -58,7 +58,6 @@
             accent-color: #a855f7;
         }
 
-        /* 两张图表中间的勾选框，靠右对齐 */
         .chart-toggle-mid {
             display: flex;
             justify-content: flex-end;
@@ -153,7 +152,8 @@
         .period-card .pc-name { font-size: 16px; font-weight: 800; color: #000; margin-bottom: 4px; }
         .period-card .pc-time { font-size: 13px; color: #888; }
 
-        .difficulty-switcher { display: flex; justify-content: center; gap: 20px; margin-bottom: 25px; }
+        /* 难度切换器：底部间距缩小到 12px */
+        .difficulty-switcher { display: flex; justify-content: center; gap: 20px; margin-bottom: 12px; }
         .diff-btn { background: #fff; border: 2px solid #ccc; border-radius: 25px; padding: 10px 40px; font-size: 16px; font-weight: 700; color: #666; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; min-width: 140px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .diff-btn.active { border-color: #a855f7; background: #faf5ff; color: #7e22ce; box-shadow: 0 0 15px rgba(168, 85, 247, 0.3); }
         .diff-btn:hover { border-color: #a855f7; }
@@ -217,7 +217,6 @@
         .trait .elem-mini { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
         .trait .elem-mini img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 血量行：增大数值与灰色字间距 */
         .stats-row {
             display: flex;
             flex-direction: column;
@@ -286,7 +285,6 @@
     <div class="chart-section">
         <div class="chart-wrapper" id="totalChart"></div>
 
-        <!-- 两张图表中间的勾选框 -->
         <div class="chart-toggle-mid">
             <label class="chart-mode-label">
                 <span>N5血量演化图</span>
@@ -682,7 +680,6 @@
             renderMonsterCards();
         });
 
-        // 两个 N5 勾选框联动
         document.querySelectorAll(".n5-toggle").forEach(cb => {
             cb.addEventListener("change", (e) => {
                 chartLevel = e.target.checked ? 5 : 6;
