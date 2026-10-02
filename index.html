@@ -35,13 +35,8 @@
             gap: 10px;
             z-index: 10;
         }
-        #btnBar .btn-row {
-            display: flex;
-            gap: 10px;
-        }
-        #btnBar.hidden {
-            display: none;
-        }
+        #btnBar .btn-row { display: flex; gap: 10px; }
+        #btnBar.hidden { display: none; }
         .chart-mode-label {
             display: inline-flex;
             align-items: center;
@@ -189,6 +184,7 @@
             text-shadow: 0 4px 6px rgba(0,0,0,0.15);
         }
 
+        /* 怪物名字：保持 17px 不变 */
         .monster-name {
             font-size: 17px;
             font-weight: 700;
@@ -198,7 +194,8 @@
             z-index: 1;
         }
 
-        .monster-sub { font-size: 12px; color: #666; text-align: center; margin-bottom: 8px; z-index: 1; }
+        /* 副标题：12 → 13 */
+        .monster-sub { font-size: 13px; color: #666; text-align: center; margin-bottom: 8px; z-index: 1; }
 
         .traits-row {
             display: flex;
@@ -210,13 +207,14 @@
             align-items: center;
             min-height: 44px;
         }
-        .trait { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #333; flex-wrap: wrap; justify-content: center; }
+        /* 优势/劣势：13 → 14 */
+        .trait { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #333; flex-wrap: wrap; justify-content: center; }
         .trait > img { width: 18px; height: 18px; }
         .trait .trait-text { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: center; }
         .trait .elem-mini { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
         .trait .elem-mini img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 血量行：N4 与右侧整体小间距；红色数字与灰色字大间距 */
+        /* 血量行：整体 15 → 16；Nx 与血量数字间距 2px */
         .stats-row {
             display: flex;
             flex-direction: column;
@@ -231,21 +229,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;                  /* N4 与右侧整体之间的小间距 */
-            font-size: 15px;
+            gap: 2px;                  /* N4 与红色数字几乎贴在一起 */
+            font-size: 16px;
             font-weight: 600;
         }
         .stats-row .stat-meta {
             display: inline-flex;
             align-items: center;
-            gap: 22px;                 /* 红色数字与灰色字之间的大间距 */
+            gap: 22px;                 /* 红色数字与灰色字之间保持较大间距 */
         }
-        .stats-row .stat-label { color: #333; min-width: 32px; text-align: right; }
-        .stats-row .stat-value { color: #cc0000; font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; min-width: 108px; text-align: right; }
-        .stats-row .stat-percent { color: #888; font-size: 12px; min-width: 72px; text-align: left; }
+        .stats-row .stat-label { color: #333; min-width: 34px; text-align: right; }
+        .stats-row .stat-value { color: #cc0000; font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; min-width: 112px; text-align: right; }
+        /* 百分比灰色字：12 → 13 */
+        .stats-row .stat-percent { color: #888; font-size: 13px; min-width: 78px; text-align: left; }
 
-        .mechanism-box { width: 100%; background-color: #ffffff; border: 3px solid #1a1a1a; border-radius: 6px; padding: 12px 14px; font-size: 12px; line-height: 1.6; color: #1a1a1a; text-align: left; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 0 0 1px #fff; z-index: 1; min-height: 240px; flex-grow: 1; }
-        .mechanism-box .mech-title { font-weight: 800; font-size: 13px; margin-bottom: 6px; color: #000; }
+        /* 机制框：12 → 13 */
+        .mechanism-box { width: 100%; background-color: #ffffff; border: 3px solid #1a1a1a; border-radius: 6px; padding: 12px 14px; font-size: 13px; line-height: 1.6; color: #1a1a1a; text-align: left; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 0 0 1px #fff; z-index: 1; min-height: 240px; flex-grow: 1; }
+        /* 机制框标题：13 → 14 */
+        .mechanism-box .mech-title { font-weight: 800; font-size: 14px; margin-bottom: 6px; color: #000; }
         .mechanism-box .mech-line { margin-bottom: 4px; text-align: justify; }
 
         .mechanism-box .mech-highlight {
