@@ -206,7 +206,7 @@
             padding-top: 12px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 0;
         }
         .chart-wrapper { width: 100%; height: 420px; position: relative; }
 
@@ -434,7 +434,6 @@
                         </div>`;
             }).join('');
 
-            // 图片路径：根据当前格式选择文件夹
             const folder    = currentImageFormat === 'webp' ? 'monsters'     : 'monsters-png';
             const ext       = currentImageFormat === 'webp' ? 'webp'         : 'png';
             const altFolder = currentImageFormat === 'webp' ? 'monsters-png' : 'monsters';
@@ -444,7 +443,7 @@
             const fallback = `${IMAGE_ROOT}/${altFolder}/${boss.name}.${altExt}`;
             const fallbackChar = (boss.name || '?').charAt(0);
 
-            const iconHtml = `<img src="${primary}" alt="${boss.name}" loading="lazy" decoding="async"
+            const iconHtml = `<img src="${primary}" alt="${boss.name}" fetchpriority="high" decoding="async"
                 onerror="this.onerror=null; this.src='${fallback}';
                          this.onerror=function(){ this.style.display='none'; this.parentElement.innerHTML='<span class=\\'fallback\\'>${fallbackChar}</span>'; }">`;
 
@@ -496,29 +495,31 @@
             for (let i = 0; i < 3; i++) bossData[i].push(bossHps[i]);
         });
 
+        // 图表 1：强敌总血量演化
         if (!chartInstance1) chartInstance1 = echarts.init(byId("totalChart"));
         chartInstance1.setOption({
-            title: { text: `强敌总血量演化 (N6)`, left: "center", top: "5%", textStyle: { fontSize: 14, color: "#333" } },
+            title: { text: `强敌总血量演化 (N6)`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
             tooltip: { trigger: "axis" },
-            grid: { left: "5%", right: "5%", top: "18%", bottom: "12%", containLabel: true },
+            grid: { left: "5%", right: "5%", top: "10%", bottom: "6%", containLabel: true },
             xAxis: { type: "category", data: labels, axisLabel: { fontSize: 10, rotate: 45 } },
             yAxis: { type: "value", axisLabel: { fontSize: 10 } },
             series: [{ name: "总血量", type: "line", data: totalData, smooth: false, lineStyle: { color: "#a855f7", width: 2 }, itemStyle: { color: "#a855f7" } }]
         });
 
+        // 图表 2：各强敌血量演化（图例不与曲线相交）
         if (!chartInstance2) chartInstance2 = echarts.init(byId("bossChart"));
         chartInstance2.setOption({
-            title: { text: `各强敌血量演化 (N6)`, left: "center", top: "5%", textStyle: { fontSize: 14, color: "#333" } },
+            title: { text: `各强敌血量演化 (N6)`, left: "center", top: "2%", textStyle: { fontSize: 14, color: "#333" } },
             tooltip: { trigger: "axis" },
-            grid: { left: "5%", right: "5%", top: "18%", bottom: "12%", containLabel: true },
+            legend: { top: "8%", left: "center", textStyle: { fontSize: 10 } },
+            grid: { left: "5%", right: "5%", top: "18%", bottom: "6%", containLabel: true },
             xAxis: { type: "category", data: labels, axisLabel: { fontSize: 10, rotate: 45 } },
             yAxis: { type: "value", axisLabel: { fontSize: 10 } },
             series: [
                 { name: "强敌 1", type: "line", data: bossData[0], smooth: false, lineStyle: { color: "#3b82f6" }, itemStyle: { color: "#3b82f6" } },
                 { name: "强敌 2", type: "line", data: bossData[1], smooth: false, lineStyle: { color: "#f59e0b" }, itemStyle: { color: "#f59e0b" } },
                 { name: "强敌 3", type: "line", data: bossData[2], smooth: false, lineStyle: { color: "#10b981" }, itemStyle: { color: "#10b981" } }
-            ],
-            legend: { top: "15%", textStyle: { fontSize: 10 } }
+            ]
         });
     };
 
@@ -526,7 +527,7 @@
         updateHeader();
         renderDifficultySwitcher();
         renderMonsterCards();
-        await renderCharts();
+        renderCharts();
     };
 
     // ============================================================
@@ -572,7 +573,6 @@
     // 6. 事件
     // ============================================================
     const bindEvents = () => {
-        // 下载图片
         byId("downloadBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             const btn = byId("downloadBtn");
@@ -608,17 +608,14 @@
             }
         });
 
-        // 切换图片格式
         byId("toggleFormatBtn").addEventListener("click", () => {
             currentImageFormat = currentImageFormat === 'webp' ? 'png' : 'webp';
             byId("toggleFormatBtn").textContent = currentImageFormat === 'webp'
                 ? '切换图片格式-png'
                 : '切换图片格式-webp';
-            // 只重绘卡片，不重置期数和图表
             renderMonsterCards();
         });
 
-        // 期数切换
         byId("prevSchedule").addEventListener("click", async (e) => {
             e.stopPropagation();
             currentIndex = (currentIndex + 1) % allEntries.length;
@@ -632,7 +629,6 @@
             render();
         });
 
-        // 期数选择弹层
         byId("periodTrigger").addEventListener("click", (e) => {
             e.stopPropagation();
             openPeriodModal();
@@ -645,7 +641,6 @@
             if (e.key === "Escape") closePeriodModal();
         });
 
-        // 窗口缩放
         window.addEventListener('resize', () => {
             if (chartInstance1) chartInstance1.resize();
             if (chartInstance2) chartInstance2.resize();
