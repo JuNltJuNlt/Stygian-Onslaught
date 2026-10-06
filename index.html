@@ -434,13 +434,19 @@
         if (!raw) return '';
         let html = String(raw);
 
+        // *N*xxx*N* → 元素色加粗（N = 0~7，首尾编号相同）
         html = html.replace(/\*([0-7])\*([^*]+)\*\1\*/g, (_, n, text) => {
             return `<span class="${elemPrefix}${n}">${text}</span>`;
         });
 
+        // **xxx** → 橙色加粗
         html = html.replace(/\*\*([^*]+)\*\*/g, (_, text) => {
             return `<span class="${orangeClass}">${text}</span>`;
         });
+
+        // ★ 关键：把富文本标签后面的空格换成不换行空格，防止标点被换到下一行
+        // 只替换 </span> 后紧跟的空格，保留空格宽度，但禁止在该处换行
+        html = html.replace(/<\/span>(\s+)/g, '</span>&nbsp;');
 
         return html;
     };
@@ -605,7 +611,6 @@
             let total = 0;
             const bossHps = [0, 0, 0];
             (entry.bosses || []).forEach((name, idx) => {
-                // 用纯净名字查
                 const m = monsterMap[stripRichMarkup(name)];
                 if (m) {
                     const hpN = calcMonsterHp(m, diffIdx);
