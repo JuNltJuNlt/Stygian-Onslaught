@@ -249,7 +249,7 @@
         /* 7 种元素编号色（mech 与 name 共用） */
         .mechanism-box .mech-elem-1, .monster-name .mech-elem-1 { font-weight: 800; color: #FF0000; }  /* 火 */
         .mechanism-box .mech-elem-2, .monster-name .mech-elem-2 { font-weight: 800; color: #1E88E5; }  /* 水 */
-        .mechanism-box .mech-elem-3, .monster-name .mech-elem-3 { font-weight: 800; color: #00BCD4; }  /* 风（青） */
+        .mechanism-box .mech-elem-3, .monster-name .mech-elem-3 { font-weight: 800; color: #3DD9B0; }  /* 风（薄荷青，接近风元素图标） */
         .mechanism-box .mech-elem-4, .monster-name .mech-elem-4 { font-weight: 800; color: #7B2FBE; }  /* 雷 */
         .mechanism-box .mech-elem-5, .monster-name .mech-elem-5 { font-weight: 800; color: #00ACC1; }  /* 草 */
         .mechanism-box .mech-elem-6, .monster-name .mech-elem-6 { font-weight: 800; color: #00B0FF; }  /* 冰 */
@@ -546,7 +546,7 @@
                         </div>`;
             }).join('');
 
-            // 关键：图片路径用"纯净名字"，显示用"富文本名字"
+            // 图片路径用"纯净名字"，显示用"富文本名字"
             const cleanName = stripRichMarkup(boss.name || '');
             const nameHtml  = renderRichText(boss.name || '', 'mech-orange', 'mech-elem-');
 
