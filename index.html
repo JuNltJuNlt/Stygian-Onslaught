@@ -44,7 +44,7 @@
         .download-btn:hover { background: rgba(168, 85, 247, 0.25); border-color: #a855f7; }
         .download-btn:active { transform: scale(0.97); }
 
-        /* 底部 5 个单选框面板 */
+        /* 底部 5 个勾选框面板 */
         .radio-panel {
             display: flex;
             flex-direction: column;
@@ -68,12 +68,41 @@
             user-select: none;
             font-weight: 500;
         }
-        .radio-label input[type="radio"] {
+        
+        /* 自定义勾选框：圆角矩形、黑色主题 */
+        .radio-label input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
             width: 16px;
             height: 16px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
             cursor: pointer;
-            accent-color: #a855f7;
+            position: relative;
+            transition: all 0.2s;
+            outline: none;
         }
+        .radio-label input[type="checkbox"]:hover {
+            border-color: #888;
+        }
+        .radio-label input[type="checkbox"]:checked {
+            background-color: #000;
+            border-color: #000;
+        }
+        /* 勾选后的白色对勾 */
+        .radio-label input[type="checkbox"]:checked::after {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 1px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
         .control-separator {
             height: 1px;
             background: #eee;
@@ -366,14 +395,14 @@
         
         <div class="radio-panel">
             <div class="radio-group" id="chartRadioGroup">
-                <label class="radio-label"><input type="radio" name="chartLevel" value="6" checked> N6血量演化图</label>
-                <label class="radio-label"><input type="radio" name="chartLevel" value="5"> N5血量演化图</label>
-                <label class="radio-label"><input type="radio" name="chartLevel" value="4"> N4血量演化图</label>
+                <label class="radio-label"><input type="checkbox" name="chartLevel" value="6" checked> N6血量演化图</label>
+                <label class="radio-label"><input type="checkbox" name="chartLevel" value="5"> N5血量演化图</label>
+                <label class="radio-label"><input type="checkbox" name="chartLevel" value="4"> N4血量演化图</label>
             </div>
             <div class="control-separator"></div>
             <div class="radio-group" id="mechRadioGroup">
-                <label class="radio-label"><input type="radio" name="mechMode" value="n56" checked> N5-6怪物机制</label>
-                <label class="radio-label"><input type="radio" name="mechMode" value="n14"> N1-4怪物机制</label>
+                <label class="radio-label"><input type="checkbox" name="mechMode" value="n56" checked> N5-6怪物机制</label>
+                <label class="radio-label"><input type="checkbox" name="mechMode" value="n14"> N1-4怪物机制</label>
             </div>
         </div>
     </div>
@@ -424,15 +453,15 @@
     let baseHpTable = null;
     let allEntries = [];
     let currentIndex = 0;
-    let currentDiffMode = 4; // 用于卡片上的 N1-3 / N4-6 切换
+    let currentDiffMode = 4; 
     let currentMonstersData = [];
     
     let chartInstance1 = null;
     let chartInstance2 = null;
     
     let currentImageFormat = 'webp';
-    let chartLevel = 6; // 图表对应的难度：6 / 5 / 4
-    let mechMode = 'n56'; // 机制面板模式：'n56' / 'n14'
+    let chartLevel = 6; 
+    let mechMode = 'n56';
     
     const monsterCache = {};
 
@@ -785,18 +814,36 @@
     // ============================================================
     const bindEvents = () => {
         // 图表级别切换
-        document.querySelectorAll('input[name="chartLevel"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                chartLevel = Number(e.target.value);
-                renderCharts();
+        document.querySelectorAll('input[name="chartLevel"]').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    // 单选逻辑
+                    document.querySelectorAll('input[name="chartLevel"]').forEach(other => {
+                        if (other !== e.target) other.checked = false;
+                    });
+                    chartLevel = Number(e.target.value);
+                    renderCharts();
+                } else {
+                    // 防止取消勾选
+                    e.target.checked = true;
+                }
             });
         });
 
         // 机制模式切换
-        document.querySelectorAll('input[name="mechMode"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                mechMode = e.target.value;
-                renderMonsterCards();
+        document.querySelectorAll('input[name="mechMode"]').forEach(cb => {
+            cb.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    // 单选逻辑
+                    document.querySelectorAll('input[name="mechMode"]').forEach(other => {
+                        if (other !== e.target) other.checked = false;
+                    });
+                    mechMode = e.target.value;
+                    renderMonsterCards();
+                } else {
+                    // 防止取消勾选
+                    e.target.checked = true;
+                }
             });
         });
 
