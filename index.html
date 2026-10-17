@@ -25,38 +25,62 @@
         .download-btn:hover { background: rgba(168, 85, 247, 0.25); border-color: #a855f7; }
         .download-btn:active { transform: scale(0.97); }
 
+        /* 右上角控制面板 */
         #btnBar {
             position: absolute;
             top: 30px;
             right: 40px;
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
+            align-items: stretch;
             gap: 10px;
             z-index: 10;
+            width: 160px;
         }
-        #btnBar .btn-row { display: flex; gap: 10px; }
+        #btnBar .btn-row { display: flex; flex-direction: column; gap: 8px; }
         #btnBar.hidden { display: none; }
+        
+        .control-btn {
+            background: #fff;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .control-btn:hover { border-color: #a855f7; }
+        .control-btn.active {
+            border-color: #a855f7;
+            background: #faf5ff;
+            color: #7e22ce;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+        }
+        .control-separator {
+            height: 1px;
+            background: #ddd;
+            margin: 4px 0;
+        }
+
         .chart-mode-label {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
-            font-size: 14px;
+            font-size: 13px;
             color: #333;
             cursor: pointer;
             user-select: none;
+            margin-top: 4px;
         }
         .chart-mode-label input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             cursor: pointer;
             accent-color: #a855f7;
-        }
-
-        .chart-toggle-mid {
-            display: flex;
-            justify-content: flex-end;
-            padding: 0 0 8px 0;
         }
 
         .header-section { display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 20px; }
@@ -238,26 +262,17 @@
         .mechanism-box .mech-title { font-weight: 800; font-size: 14px; margin-bottom: 6px; color: #000; }
         .mechanism-box .mech-line { margin-bottom: 4px; text-align: justify; }
 
-        .mechanism-box .mech-orange,
-        .monster-name .mech-orange {
-            font-weight: 800;
-            color: #E8A33D;
-        }
+        .mechanism-box .mech-orange, .monster-name .mech-orange { font-weight: 800; color: #E8A33D; }
+        .mechanism-box .mech-elem-0, .monster-name .mech-elem-0 { font-weight: 800; color: #000; }
+        .mechanism-box .mech-elem-1, .monster-name .mech-elem-1 { font-weight: 800; color: #FF0000; }
+        .mechanism-box .mech-elem-2, .monster-name .mech-elem-2 { font-weight: 800; color: #1E88E5; }
+        .mechanism-box .mech-elem-3, .monster-name .mech-elem-3 { font-weight: 800; color: #3DD9B0; }
+        .mechanism-box .mech-elem-4, .monster-name .mech-elem-4 { font-weight: 800; color: #7B2FBE; }
+        .mechanism-box .mech-elem-5, .monster-name .mech-elem-5 { font-weight: 800; color: #4CAF50; }
+        .mechanism-box .mech-elem-6, .monster-name .mech-elem-6 { font-weight: 800; color: #6CD5FF; }
+        .mechanism-box .mech-elem-7, .monster-name .mech-elem-7 { font-weight: 800; color: #D4A017; }
 
-        /* 元素编号色（mech 与 name 共用） */
-        .mechanism-box .mech-elem-0, .monster-name .mech-elem-0 { font-weight: 800; color: #000; }       /* 0：加粗黑 */
-        .mechanism-box .mech-elem-1, .monster-name .mech-elem-1 { font-weight: 800; color: #FF0000; }     /* 火 */
-        .mechanism-box .mech-elem-2, .monster-name .mech-elem-2 { font-weight: 800; color: #1E88E5; }     /* 水 */
-        .mechanism-box .mech-elem-3, .monster-name .mech-elem-3 { font-weight: 800; color: #3DD9B0; }     /* 风（薄荷青） */
-        .mechanism-box .mech-elem-4, .monster-name .mech-elem-4 { font-weight: 800; color: #7B2FBE; }     /* 雷 */
-        .mechanism-box .mech-elem-5, .monster-name .mech-elem-5 { font-weight: 800; color: #4CAF50; }     /* 草（草绿） */
-        .mechanism-box .mech-elem-6, .monster-name .mech-elem-6 { font-weight: 800; color: #6CD5FF; }     /* 冰（浅冰蓝） */
-        .mechanism-box .mech-elem-7, .monster-name .mech-elem-7 { font-weight: 800; color: #D4A017; }     /* 岩 */
-
-        .mechanism-box .mech-bullet {
-            font-weight: 800;
-            color: #000;
-        }
+        .mechanism-box .mech-bullet { font-weight: 800; color: #000; }
 
         .chart-section {
             border-top: 2px solid #eee;
@@ -268,26 +283,22 @@
         }
         .chart-wrapper { width: 100%; height: 360px; position: relative; }
 
-        /* ===== 手机端适配 ===== */
-        /* 中等屏幕 */
         @media (max-width: 1250px) {
             .canvas { width: 100%; padding: 20px; }
             .monster-row { gap: 15px; }
         }
 
-        /* 平板 / 手机（≤768px） */
         @media (max-width: 768px) {
             body { padding: 8px; }
             .canvas { width: 100% !important; padding: 16px 12px 8px; border-radius: 6px; }
-
             .header-section { margin-bottom: 12px; }
             .header-section h1 { font-size: 22px; letter-spacing: 2px; }
 
-            #btnBar { position: static; align-items: center; margin-bottom: 12px; gap: 8px; }
-            #btnBar .btn-row { flex-wrap: wrap; justify-content: center; }
-            .download-btn { padding: 6px 16px; font-size: 13px; }
-            .chart-mode-label { font-size: 13px; }
-            .chart-mode-label input[type="checkbox"] { width: 16px; height: 16px; }
+            #btnBar { position: static; flex-direction: row; flex-wrap: wrap; justify-content: center; width: 100%; margin-bottom: 12px; gap: 8px; }
+            #btnBar .btn-row { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+            .control-btn { padding: 6px 12px; font-size: 13px; }
+            .control-separator { display: none; }
+            .chart-mode-label { width: 100%; justify-content: center; margin-top: 0; }
 
             .period-switcher { padding: 4px 14px; gap: 6px; margin-bottom: 14px; }
             .period-switcher .arrow { font-size: 18px; }
@@ -326,7 +337,6 @@
             .period-card .pc-time { font-size: 12px; }
         }
 
-        /* 小屏手机（≤480px） */
         @media (max-width: 480px) {
             .canvas { padding: 12px 8px 6px; }
             .header-section h1 { font-size: 20px; letter-spacing: 1px; }
@@ -342,15 +352,22 @@
 <body>
 
 <div class="canvas">
+    <!-- 右上角控制面板 -->
     <div id="btnBar">
         <div class="btn-row">
-            <button class="download-btn" id="downloadBtn">下载图片</button>
-            <button class="download-btn" id="toggleFormatBtn">切换图片格式-png</button>
+            <button class="control-btn active" id="btnN6" data-mode="6">N6血量演化图</button>
+            <button class="control-btn" id="btnN5" data-mode="5">N5血量演化图</button>
+            <button class="control-btn" id="btnN4" data-mode="4">N4血量演化图</button>
+        </div>
+        <div class="control-separator"></div>
+        <div class="btn-row">
+            <button class="control-btn active" id="btnMechN56" data-mode="n56">N5-6怪物机制</button>
+            <button class="control-btn" id="btnMechN14" data-mode="n14">N1-4怪物机制</button>
         </div>
         <label class="chart-mode-label">
-            <span>N5血量演化图</span>
-            <input type="checkbox" class="n5-toggle">
+            <input type="checkbox" id="toggleFormatBtn" checked> 使用 WebP 图片
         </label>
+        <button class="download-btn" id="downloadBtn" style="margin-top: 4px;">下载图片</button>
     </div>
 
     <div class="header-section"><h1>幽境危战</h1></div>
@@ -368,16 +385,9 @@
         <div class="diff-btn active" data-mode="4">N4-6</div>
     </div>
     <div class="monster-row" id="monsterRow"></div>
+    
     <div class="chart-section">
         <div class="chart-wrapper" id="totalChart"></div>
-
-        <div class="chart-toggle-mid">
-            <label class="chart-mode-label">
-                <span>N5血量演化图</span>
-                <input type="checkbox" class="n5-toggle">
-            </label>
-        </div>
-
         <div class="chart-wrapper" id="bossChart"></div>
     </div>
 </div>
@@ -397,7 +407,7 @@
 
 <script>
     // ============================================================
-    // 1. 配置
+    // 1. 配置与全局状态
     // ============================================================
     const DATA_ROOT = 'data';
     const MONSTER_ROOT = 'data/monsters';
@@ -406,12 +416,16 @@
     let baseHpTable = null;
     let allEntries = [];
     let currentIndex = 0;
-    let currentDiffMode = 4;
+    let currentDiffMode = 4; // 用于卡片的 N1-3 / N4-6 切换
     let currentMonstersData = [];
+    
     let chartInstance1 = null;
     let chartInstance2 = null;
+    
     let currentImageFormat = 'webp';
-    let chartLevel = 6;
+    let chartLevel = 6; // 图表对应的难度：6 / 5 / 4
+    let mechMode = 'n56'; // 机制面板模式：'n56' / 'n14'
+    
     const monsterCache = {};
 
     const byId = (id) => document.getElementById(id);
@@ -429,7 +443,8 @@
         const res = await fetch(`${DATA_ROOT}/index.json`);
         if (!res.ok) throw new Error('无法加载 index.json');
         const data = await res.json();
-        return data.entries || [];
+        const entries = data.entries || [];
+        return entries.filter(e => !e.hidden);
     }
 
     async function loadMonster(name) {
@@ -466,7 +481,7 @@
     }
 
     // ============================================================
-    // 3. 血量计算
+    // 3. 血量计算与富文本解析
     // ============================================================
     function getBaseHp(level, type = 'v1') {
         if (!baseHpTable) return 0;
@@ -495,35 +510,22 @@
         return Math.round(baseHp * relHp * mult);
     }
 
-    // ============================================================
-    // 3.5 富文本渲染 与 名字净化
-    // ============================================================
     const renderRichText = (raw, orangeClass = 'mech-orange', elemPrefix = 'mech-elem-') => {
         if (!raw) return '';
         let html = String(raw);
-
-        // *N*xxx*N* → 元素色加粗（N = 0~7）
         html = html.replace(/\*([0-7])\*([^*]+)\*\1\*/g, (_, n, text) => {
             return `<span class="${elemPrefix}${n}">${text}</span>`;
         });
-
-        // **xxx** → 橙色加粗
         html = html.replace(/\*\*([^*]+)\*\*/g, (_, text) => {
             return `<span class="${orangeClass}">${text}</span>`;
         });
-
-        // 富文本标签后的空格 → 不换行空格，防止标点被换到下一行
         html = html.replace(/<\/span>(\s+)/g, '</span>&nbsp;');
-
         return html;
     };
 
-    // 去掉 *N*...*N* 与 ** 标记，得到纯文本
     const stripRichMarkup = (raw) => {
         if (!raw) return '';
-        return String(raw)
-            .replace(/\*[0-7]\*/g, '')
-            .replace(/\*\*/g, '');
+        return String(raw).replace(/\*[0-7]\*/g, '').replace(/\*\*/g, '');
     };
 
     // ============================================================
@@ -562,9 +564,17 @@
     };
 
     const renderTraits = (boss) => {
+        // 根据当前机制模式选择 strengths / weaknesses
+        let strengths = boss.strengths || [];
+        let weaknesses = boss.weaknesses || [];
+        if (mechMode === 'n14' && boss.n1_4) {
+            strengths = boss.n1_4.strengths || strengths;
+            weaknesses = boss.n1_4.weaknesses || weaknesses;
+        }
+
         const items = [];
-        (boss.strengths || []).forEach(s => items.push(renderTraitItem(s, 'check')));
-        (boss.weaknesses || []).forEach(w => items.push(renderTraitItem(w, 'close')));
+        strengths.forEach(s => items.push(renderTraitItem(s, 'check')));
+        weaknesses.forEach(w => items.push(renderTraitItem(w, 'close')));
         if (!items.length) return '';
         return `<div class="traits-row">${items.join('')}</div>`;
     };
@@ -579,7 +589,13 @@
         }
 
         currentMonstersData.forEach((boss) => {
-            const mechHtml = (boss.mech || "无机制说明")
+            // 机制文本选择
+            let mechText = boss.mech || "无机制说明";
+            if (mechMode === 'n14' && boss.n1_4 && boss.n1_4.mech) {
+                mechText = boss.n1_4.mech;
+            }
+
+            const mechHtml = mechText
                 .split('\n')
                 .map(line => line.trim())
                 .filter(Boolean)
@@ -657,12 +673,9 @@
         const allMonstersList = (await Promise.all([...allMonsterNames].map(n => loadMonster(n))))
             .filter(m => m !== null);
 
-        // monsterMap 用"纯净名字"做键
         const monsterMap = {};
         allMonstersList.forEach(m => {
-            if (m && m.name) {
-                monsterMap[stripRichMarkup(m.name)] = m;
-            }
+            if (m && m.name) monsterMap[stripRichMarkup(m.name)] = m;
         });
 
         const sortedEntries = allEntries.slice().reverse();
@@ -672,7 +685,7 @@
         const bossData = [[], [], []];
 
         const diffIdx = chartLevel - 1;
-        const suffix = chartLevel === 6 ? "N6" : "N5";
+        const suffix = `N${chartLevel}`;
 
         sortedEntries.forEach(entry => {
             let total = 0;
@@ -765,6 +778,40 @@
     // 6. 事件
     // ============================================================
     const bindEvents = () => {
+        // 切换图表难度
+        ['N6', 'N5', 'N4'].forEach(lvlStr => {
+            const lvl = Number(lvlStr[1]);
+            byId(`btn${lvlStr}`).addEventListener("click", () => {
+                chartLevel = lvl;
+                ['N6', 'N5', 'N4'].forEach(x => byId(`btn${x}`).classList.remove("active"));
+                byId(`btn${lvlStr}`).classList.add("active");
+                renderCharts();
+            });
+        });
+
+        // 切换机制面板
+        byId("btnMechN56").addEventListener("click", () => {
+            if (mechMode === 'n56') return;
+            mechMode = 'n56';
+            byId("btnMechN56").classList.add("active");
+            byId("btnMechN14").classList.remove("active");
+            renderMonsterCards();
+        });
+        byId("btnMechN14").addEventListener("click", () => {
+            if (mechMode === 'n14') return;
+            mechMode = 'n14';
+            byId("btnMechN14").classList.add("active");
+            byId("btnMechN56").classList.remove("active");
+            renderMonsterCards();
+        });
+
+        // 图片格式切换 (Checkbox)
+        byId("toggleFormatBtn").addEventListener("change", (e) => {
+            currentImageFormat = e.target.checked ? 'webp' : 'png';
+            renderMonsterCards();
+        });
+
+        // 下载图片
         byId("downloadBtn").addEventListener("click", async (e) => {
             e.preventDefault();
             const btnBar = byId("btnBar");
@@ -790,7 +837,7 @@
 
                 const a = document.createElement("a");
                 const entry = allEntries[currentIndex];
-                a.download = `幽境危战_${entry?.deadly_name || "未命名"}.png`;
+                a.download = `幽境危战_${entry?.deadly_name || "未命名"}_N${chartLevel}.png`;
                 a.href = canvas.toDataURL("image/png");
                 a.click();
             } catch (err) {
@@ -802,24 +849,7 @@
             }
         });
 
-        byId("toggleFormatBtn").addEventListener("click", () => {
-            currentImageFormat = currentImageFormat === 'webp' ? 'png' : 'webp';
-            byId("toggleFormatBtn").textContent = currentImageFormat === 'webp'
-                ? '切换图片格式-png'
-                : '切换图片格式-webp';
-            renderMonsterCards();
-        });
-
-        document.querySelectorAll(".n5-toggle").forEach(cb => {
-            cb.addEventListener("change", (e) => {
-                chartLevel = e.target.checked ? 5 : 6;
-                document.querySelectorAll(".n5-toggle").forEach(other => {
-                    if (other !== e.target) other.checked = e.target.checked;
-                });
-                renderCharts();
-            });
-        });
-
+        // 期数切换
         byId("prevSchedule").addEventListener("click", async (e) => {
             e.stopPropagation();
             currentIndex = (currentIndex + 1) % allEntries.length;
