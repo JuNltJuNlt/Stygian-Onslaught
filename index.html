@@ -11,6 +11,22 @@
         body { background-color: #f5f6fa; display: flex; justify-content: center; padding: 20px; color: #333; }
         .canvas { position: relative; width: 1240px; background-color: #ffffff; box-shadow: 0 0 30px rgba(0, 0, 0, 0.1); padding: 30px 40px 10px; border-radius: 8px; overflow: hidden; }
 
+        /* 右上角控制面板 */
+        #btnBar {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+            z-index: 10;
+        }
+        #btnBar.hidden { display: none; }
+        
+        .btn-row { display: flex; gap: 10px; }
+
+        /* 下载与格式切换按钮（保持原有样式） */
         .download-btn {
             background: rgba(168, 85, 247, 0.1);
             border: 1px solid rgba(168, 85, 247, 0.5);
@@ -25,62 +41,59 @@
         .download-btn:hover { background: rgba(168, 85, 247, 0.25); border-color: #a855f7; }
         .download-btn:active { transform: scale(0.97); }
 
-        /* 右上角控制面板 */
-        #btnBar {
-            position: absolute;
-            top: 30px;
-            right: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            gap: 10px;
-            z-index: 10;
-            width: 160px;
-        }
-        #btnBar .btn-row { display: flex; flex-direction: column; gap: 8px; }
-        #btnBar.hidden { display: none; }
-        
-        .control-btn {
-            background: #fff;
-            border: 2px solid #ccc;
-            border-radius: 12px;
-            padding: 8px 12px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #666;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-        .control-btn:hover { border-color: #a855f7; }
-        .control-btn.active {
-            border-color: #a855f7;
-            background: #faf5ff;
-            color: #7e22ce;
-            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
-        }
-        .control-separator {
-            height: 1px;
-            background: #ddd;
-            margin: 4px 0;
-        }
-
         .chart-mode-label {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 6px;
-            font-size: 13px;
+            font-size: 14px;
             color: #333;
             cursor: pointer;
             user-select: none;
-            margin-top: 4px;
         }
         .chart-mode-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #a855f7;
+        }
+
+        /* 新增的 5 个勾选框面板 */
+        .control-panel {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .radio-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+        }
+        .radio-label input[type="radio"] {
             width: 16px;
             height: 16px;
             cursor: pointer;
             accent-color: #a855f7;
+        }
+        .control-separator {
+            height: 1px;
+            background: #eee;
+            width: 100%;
+            margin: 2px 0;
         }
 
         .header-section { display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 20px; }
@@ -283,6 +296,14 @@
         }
         .chart-wrapper { width: 100%; height: 360px; position: relative; }
 
+        /* 适应中等屏幕，防止右侧面板与左侧胶囊重叠 */
+        @media (max-width: 1350px) {
+            #btnBar { position: static; flex-direction: row; justify-content: center; align-items: center; width: 100%; margin: 0 0 16px 0; flex-wrap: wrap; }
+            .control-panel { flex-direction: row; align-items: center; gap: 16px; }
+            .radio-group { flex-direction: row; }
+            .control-separator { width: 1px; height: 20px; margin: 0 4px; }
+        }
+
         @media (max-width: 1250px) {
             .canvas { width: 100%; padding: 20px; }
             .monster-row { gap: 15px; }
@@ -294,11 +315,11 @@
             .header-section { margin-bottom: 12px; }
             .header-section h1 { font-size: 22px; letter-spacing: 2px; }
 
-            #btnBar { position: static; flex-direction: row; flex-wrap: wrap; justify-content: center; width: 100%; margin-bottom: 12px; gap: 8px; }
-            #btnBar .btn-row { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-            .control-btn { padding: 6px 12px; font-size: 13px; }
+            #btnBar { flex-direction: column; gap: 8px; }
+            .control-panel { flex-direction: row; flex-wrap: wrap; justify-content: center; padding: 10px; width: 100%; }
+            .radio-group { flex-wrap: wrap; justify-content: center; gap: 10px; }
             .control-separator { display: none; }
-            .chart-mode-label { width: 100%; justify-content: center; margin-top: 0; }
+            .btn-row { flex-wrap: wrap; justify-content: center; width: 100%; }
 
             .period-switcher { padding: 4px 14px; gap: 6px; margin-bottom: 14px; }
             .period-switcher .arrow { font-size: 18px; }
@@ -326,7 +347,6 @@
             .mechanism-box .mech-title { font-size: 13px; }
 
             .chart-wrapper { height: 260px; }
-            .chart-toggle-mid { padding: 6px 0 4px 0; }
 
             .period-modal { width: 95vw; max-height: 90vh; border-radius: 12px; }
             .period-modal-header { padding: 14px 18px 12px; }
@@ -354,20 +374,25 @@
 <div class="canvas">
     <!-- 右上角控制面板 -->
     <div id="btnBar">
-        <div class="btn-row">
-            <button class="control-btn active" id="btnN6" data-mode="6">N6血量演化图</button>
-            <button class="control-btn" id="btnN5" data-mode="5">N5血量演化图</button>
-            <button class="control-btn" id="btnN4" data-mode="4">N4血量演化图</button>
+        <div class="control-panel">
+            <div class="radio-group" id="chartRadioGroup">
+                <label class="radio-label"><input type="radio" name="chartLevel" value="6" checked> N6血量演化图</label>
+                <label class="radio-label"><input type="radio" name="chartLevel" value="5"> N5血量演化图</label>
+                <label class="radio-label"><input type="radio" name="chartLevel" value="4"> N4血量演化图</label>
+            </div>
+            <div class="control-separator"></div>
+            <div class="radio-group" id="mechRadioGroup">
+                <label class="radio-label"><input type="radio" name="mechMode" value="n56" checked> N5-6怪物机制</label>
+                <label class="radio-label"><input type="radio" name="mechMode" value="n14"> N1-4怪物机制</label>
+            </div>
         </div>
-        <div class="control-separator"></div>
+
         <div class="btn-row">
-            <button class="control-btn active" id="btnMechN56" data-mode="n56">N5-6怪物机制</button>
-            <button class="control-btn" id="btnMechN14" data-mode="n14">N1-4怪物机制</button>
+            <label class="chart-mode-label">
+                <input type="checkbox" id="toggleFormatBtn" checked> 使用 WebP 图片
+            </label>
+            <button class="download-btn" id="downloadBtn">下载图片</button>
         </div>
-        <label class="chart-mode-label">
-            <input type="checkbox" id="toggleFormatBtn" checked> 使用 WebP 图片
-        </label>
-        <button class="download-btn" id="downloadBtn" style="margin-top: 4px;">下载图片</button>
     </div>
 
     <div class="header-section"><h1>幽境危战</h1></div>
@@ -416,7 +441,7 @@
     let baseHpTable = null;
     let allEntries = [];
     let currentIndex = 0;
-    let currentDiffMode = 4; // 用于卡片的 N1-3 / N4-6 切换
+    let currentDiffMode = 4; // 用于卡片上的 N1-3 / N4-6 切换
     let currentMonstersData = [];
     
     let chartInstance1 = null;
@@ -778,34 +803,23 @@
     // 6. 事件
     // ============================================================
     const bindEvents = () => {
-        // 切换图表难度
-        ['N6', 'N5', 'N4'].forEach(lvlStr => {
-            const lvl = Number(lvlStr[1]);
-            byId(`btn${lvlStr}`).addEventListener("click", () => {
-                chartLevel = lvl;
-                ['N6', 'N5', 'N4'].forEach(x => byId(`btn${x}`).classList.remove("active"));
-                byId(`btn${lvlStr}`).classList.add("active");
+        // 图表级别切换
+        document.querySelectorAll('input[name="chartLevel"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                chartLevel = Number(e.target.value);
                 renderCharts();
             });
         });
 
-        // 切换机制面板
-        byId("btnMechN56").addEventListener("click", () => {
-            if (mechMode === 'n56') return;
-            mechMode = 'n56';
-            byId("btnMechN56").classList.add("active");
-            byId("btnMechN14").classList.remove("active");
-            renderMonsterCards();
-        });
-        byId("btnMechN14").addEventListener("click", () => {
-            if (mechMode === 'n14') return;
-            mechMode = 'n14';
-            byId("btnMechN14").classList.add("active");
-            byId("btnMechN56").classList.remove("active");
-            renderMonsterCards();
+        // 机制模式切换
+        document.querySelectorAll('input[name="mechMode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                mechMode = e.target.value;
+                renderMonsterCards();
+            });
         });
 
-        // 图片格式切换 (Checkbox)
+        // 图片格式切换
         byId("toggleFormatBtn").addEventListener("change", (e) => {
             currentImageFormat = e.target.checked ? 'webp' : 'png';
             renderMonsterCards();
