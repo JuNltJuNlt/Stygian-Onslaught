@@ -625,8 +625,18 @@
         }
 
         currentMonstersData.forEach((boss) => {
+            // 判断是否使用 N1-4 专属数据
+            const isN14 = mechMode === 'n14' && boss.n1_4;
+            
+            // 名字
+            let displayName = boss.name || '';
+            if (isN14 && boss.n1_4.name) {
+                displayName = boss.n1_4.name;
+            }
+
+            // 机制文本
             let mechText = boss.mech || "无机制说明";
-            if (mechMode === 'n14' && boss.n1_4 && boss.n1_4.mech) {
+            if (isN14 && boss.n1_4.mech) {
                 mechText = boss.n1_4.mech;
             }
 
@@ -667,8 +677,9 @@
                         </div>`;
             }).join('');
 
+            // 图片路径始终基于原始名字，不受 N1-4 名字变动影响
             const cleanName = stripRichMarkup(boss.name || '');
-            const nameHtml  = renderRichText(boss.name || '', 'mech-orange', 'mech-elem-');
+            const nameHtml  = renderRichText(displayName, 'mech-orange', 'mech-elem-');
 
             const folder    = currentImageFormat === 'webp' ? 'monsters'     : 'monsters-png';
             const ext       = currentImageFormat === 'webp' ? 'webp'         : 'png';
@@ -817,14 +828,12 @@
         document.querySelectorAll('input[name="chartLevel"]').forEach(cb => {
             cb.addEventListener('change', (e) => {
                 if (e.target.checked) {
-                    // 单选逻辑
                     document.querySelectorAll('input[name="chartLevel"]').forEach(other => {
                         if (other !== e.target) other.checked = false;
                     });
                     chartLevel = Number(e.target.value);
                     renderCharts();
                 } else {
-                    // 防止取消勾选
                     e.target.checked = true;
                 }
             });
@@ -834,14 +843,12 @@
         document.querySelectorAll('input[name="mechMode"]').forEach(cb => {
             cb.addEventListener('change', (e) => {
                 if (e.target.checked) {
-                    // 单选逻辑
                     document.querySelectorAll('input[name="mechMode"]').forEach(other => {
                         if (other !== e.target) other.checked = false;
                     });
                     mechMode = e.target.value;
                     renderMonsterCards();
                 } else {
-                    // 防止取消勾选
                     e.target.checked = true;
                 }
             });
