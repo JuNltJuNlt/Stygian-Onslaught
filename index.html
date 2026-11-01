@@ -168,6 +168,7 @@
             color: #666; padding: 2px 8px; border-radius: 6px; transition: all 0.15s;
         }
         .period-modal-close:hover { background: #f0f0f0; color: #000; }
+        .period-modal-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
 
         .period-grid {
             padding: 20px 24px 24px;
@@ -178,9 +179,13 @@
         }
 
         .period-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
             border: 1px solid #e5e5e5;
             border-radius: 12px;
-            padding: 16px 18px;
+            padding: 14px 16px;
             cursor: pointer;
             transition: all 0.15s;
             background: #fff;
@@ -195,8 +200,35 @@
             background: #faf5ff;
             box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.25);
         }
+        .period-card-info { flex: 1; min-width: 0; }
         .period-card .pc-name { font-size: 16px; font-weight: 800; color: #000; margin-bottom: 4px; }
         .period-card .pc-time { font-size: 13px; color: #888; }
+
+        /* 每期怪物阵容：统一大小的图标框，位于卡片右侧 */
+        .pc-lineup {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .pc-slot {
+            width: 48px;
+            height: 48px;
+            border: 2px solid #e4e4ec;
+            border-radius: 10px;
+            background: #f7f7fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .pc-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
 
         .difficulty-switcher { display: flex; justify-content: center; gap: 20px; margin-bottom: 6px; }
         .diff-btn { background: #fff; border: 2px solid #ccc; border-radius: 25px; padding: 10px 40px; font-size: 16px; font-weight: 700; color: #666; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; min-width: 140px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -366,9 +398,11 @@
             .period-modal-header { padding: 14px 18px 12px; }
             .period-modal-title { font-size: 18px; }
             .period-grid { grid-template-columns: 1fr; padding: 14px 18px 18px; gap: 10px; }
-            .period-card { padding: 12px 14px; }
+            .period-card { padding: 12px 14px; gap: 10px; }
             .period-card .pc-name { font-size: 15px; }
             .period-card .pc-time { font-size: 12px; }
+            .pc-slot { width: 42px; height: 42px; }
+            .pc-lineup { gap: 6px; }
         }
 
         @media (max-width: 480px) {
@@ -378,6 +412,8 @@
             .monster-icon { width: 140px; height: 140px; }
             .monster-name { font-size: 15px; }
             .stats-row .stat-item { gap: 8px; font-size: 14px; }
+            .pc-slot { width: 38px; height: 38px; }
+            .period-card { gap: 8px; padding: 10px 12px; }
             .stats-row .stat-value { min-width: unset; }
             .chart-wrapper { height: 220px; }
         }
@@ -436,7 +472,10 @@
                 <div class="period-modal-title" id="modalCurrentName">7.1</div>
                 <div class="period-modal-time" id="modalCurrentTime">2026/09/30 - 2026/11/03</div>
             </div>
-            <button class="period-modal-close" id="periodModalClose">✕</button>
+            <div class="period-modal-right">
+                <div class="pc-lineup" id="modalCurrentLineup"></div>
+                <button class="period-modal-close" id="periodModalClose">✕</button>
+            </div>
         </div>
         <div class="period-grid" id="periodGrid"></div>
     </div>
@@ -784,14 +823,39 @@
     // ============================================================
     // 5. 期数选择弹层
     // ============================================================
+    // 单只怪物阵容图标（含 webp/png 双格式回退）
+    const lineupIconHtml = (name) => {
+        const cleanName = stripRichMarkup(name || '');
+        if (!cleanName) return '';
+        const folder    = currentImageFormat === 'webp' ? 'monsters'     : 'monsters-png';
+        const ext       = currentImageFormat === 'webp' ? 'webp'         : 'png';
+        const altFolder = currentImageFormat === 'webp' ? 'monsters-png' : 'monsters';
+        const altExt    = currentImageFormat === 'webp' ? 'png'          : 'webp';
+        const primary  = `${IMAGE_ROOT}/${folder}/${cleanName}.${ext}`;
+        const fallback = `${IMAGE_ROOT}/${altFolder}/${cleanName}.${altExt}`;
+        return `<span class="pc-slot"><img src="${primary}" alt="${cleanName}" loading="lazy" decoding="async"
+                    onerror="this.onerror=null; this.src='${fallback}';
+                             this.onerror=function(){ this.style.display='none'; }"></span>`;
+    };
+
+    // 每一期的怪物阵容（最多展示 3 只，框大小统一）
+    const renderLineup = (entry) => {
+        const bosses = (entry.bosses || []).slice(0, 3);
+        if (!bosses.length) return '';
+        return `<div class="pc-lineup">${bosses.map(b => lineupIconHtml(b)).join('')}</div>`;
+    };
+
     const renderPeriodGrid = () => {
         const grid = byId("periodGrid");
         if (!grid) return;
         grid.innerHTML = allEntries.map((entry, i) => {
             const active = i === currentIndex ? "active" : "";
             return `<div class="period-card ${active}" data-index="${i}">
-                        <div class="pc-name">${entry.deadly_name || ""}</div>
-                        <div class="pc-time">${entry.time || ""}</div>
+                        <div class="period-card-info">
+                            <div class="pc-name">${entry.deadly_name || ""}</div>
+                            <div class="pc-time">${entry.time || ""}</div>
+                        </div>
+                        ${renderLineup(entry)}
                     </div>`;
         }).join('');
 
@@ -812,6 +876,7 @@
         if (!entry) return;
         byId("modalCurrentName").textContent = entry.deadly_name || "";
         byId("modalCurrentTime").textContent = entry.time || "";
+        byId("modalCurrentLineup").innerHTML = renderLineup(entry);
         renderPeriodGrid();
         byId("periodOverlay").classList.add("show");
     };
