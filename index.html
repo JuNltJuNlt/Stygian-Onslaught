@@ -824,19 +824,19 @@
     // 5. 期数选择弹层
     // ============================================================
     // 单只怪物阵容图标（含 webp/png 双格式回退）
-    const lineupIconHtml = (name) => {
-        const cleanName = stripRichMarkup(name || '');
-        if (!cleanName) return '';
-        const folder    = currentImageFormat === 'webp' ? 'monsters'     : 'monsters-png';
-        const ext       = currentImageFormat === 'webp' ? 'webp'         : 'png';
-        const altFolder = currentImageFormat === 'webp' ? 'monsters-png' : 'monsters';
-        const altExt    = currentImageFormat === 'webp' ? 'png'          : 'webp';
-        const primary  = `${IMAGE_ROOT}/${folder}/${cleanName}.${ext}`;
-        const fallback = `${IMAGE_ROOT}/${altFolder}/${cleanName}.${altExt}`;
-        return `<span class="pc-slot"><img src="${primary}" alt="${cleanName}" loading="lazy" decoding="async"
-                    onerror="this.onerror=null; this.src='${fallback}';
-                             this.onerror=function(){ this.style.display='none'; }"></span>`;
-    };
+const lineupIconHtml = (name) => {
+    const cleanName = stripRichMarkup(name || '');
+    if (!cleanName) return '';
+    const folder    = currentImageFormat === 'webp' ? 'monsters'     : 'monsters-png';
+    const ext       = currentImageFormat === 'webp' ? 'webp'         : 'png';
+    const altFolder = currentImageFormat === 'webp' ? 'monsters-png' : 'monsters';
+    const altExt    = currentImageFormat === 'webp' ? 'png'          : 'webp';
+    const primary  = `${IMAGE_ROOT}/${folder}/${cleanName}.${ext}`;
+    const fallback = `${IMAGE_ROOT}/${altFolder}/${cleanName}.${altExt}`;
+    return `<span class="pc-slot"><img src="${primary}" alt="${cleanName}" decoding="async"
+                onerror="this.onerror=null; this.src='${fallback}';
+                         this.onerror=function(){ this.style.display='none'; }"></span>`;
+};
 
     // 每一期的怪物阵容（最多展示 3 只，框大小统一）
     const renderLineup = (entry) => {
